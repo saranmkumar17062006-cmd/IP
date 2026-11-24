@@ -1,0 +1,572 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beauty Parlour Appointment System</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #fff3f7;
+    color: #333;
+}
+
+header {
+    background: #a83268;
+    color: white;
+    text-align: center;
+    padding: 22px;
+}
+
+nav {
+    background: #762449;
+    text-align: center;
+    padding: 14px;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin: 8px;
+}
+
+.container {
+    max-width: 900px;
+    margin: 22px auto;
+    padding: 22px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px #e4cbd5;
+}
+
+h2 { color: #a83268; }
+
+input, select, textarea, button {
+    width: 100%;
+    padding: 11px;
+    margin: 7px 0;
+}
+
+button {
+    background: #a83268;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover { background: #762449; }
+
+.services {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 15px;
+}
+
+.card {
+    padding: 15px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.price {
+    color: #a83268;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.result {
+    background: #fff0f5;
+    padding: 13px;
+    margin-top: 12px;
+    overflow-wrap: anywhere;
+}
+
+footer {
+    background: #762449;
+    color: white;
+    text-align: center;
+    padding: 15px;
+}
+
+@media(max-width: 600px) {
+    .container { margin: 12px; padding: 15px; }
+    nav a { display: inline-block; }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>💅 Glamour Beauty Parlour</h1>
+    <p>Book Your Beauty Appointment Online</p>
+</header>
+
+<nav>
+    <a href="#register">Register</a>
+    <a href="#login">Login</a>
+    <a href="#services">Services</a>
+    <a href="#booking">Book Appointment</a>
+    <a href="#account">My Appointments</a>
+    <a href="#feedback">Feedback</a>
+    <a href="#admin">Admin</a>
+</nav>
+
+<div class="container" id="register">
+<h2>Customer Registration</h2>
+<form id="registerForm">
+    <input id="regName" placeholder="Full Name" required>
+    <input id="regEmail" type="email" placeholder="Email Address" required>
+    <input id="regPassword" type="password" placeholder="Password" required>
+    <button type="submit">Register</button>
+</form>
+<p id="registerMessage"></p>
+</div>
+
+<div class="container" id="login">
+<h2>Customer Login</h2>
+<form id="loginForm">
+    <input id="loginEmail" type="email" placeholder="Email Address" required>
+    <input id="loginPassword" type="password" placeholder="Password" required>
+    <button type="submit">Login</button>
+</form>
+<p id="loginMessage"></p>
+</div>
+
+<div class="container" id="services">
+<h2>Our Beauty Services</h2>
+
+<input id="searchService" placeholder="Search services">
+
+<select id="serviceCategory">
+    <option value="All">All Categories</option>
+    <option>Hair</option>
+    <option>Skin</option>
+    <option>Makeup</option>
+    <option>Nails</option>
+</select>
+
+<div class="services" id="serviceList"></div>
+</div>
+
+<div class="container" id="booking">
+<h2>Book an Appointment</h2>
+
+<form id="bookingForm">
+    <input id="customer" placeholder="Customer Name" required>
+    <input id="customerPhone" type="tel"
+           placeholder="Mobile Number" required>
+
+    <select id="service" required>
+        <option value="">Select Service</option>
+        <option>Haircut</option>
+        <option>Facial</option>
+        <option>Bridal Makeup</option>
+        <option>Manicure</option>
+    </select>
+
+    <select id="stylist" required>
+        <option value="">Select Stylist</option>
+        <option>Priya - Hair Stylist</option>
+        <option>Anu - Skin Specialist</option>
+        <option>Meena - Makeup Artist</option>
+    </select>
+
+    <input id="appointmentDate" type="date" required>
+
+    <select id="appointmentTime" required>
+        <option value="">Select Time</option>
+        <option>10:00 AM</option>
+        <option>11:00 AM</option>
+        <option>12:00 PM</option>
+        <option>02:00 PM</option>
+        <option>03:00 PM</option>
+        <option>04:00 PM</option>
+        <option>05:00 PM</option>
+    </select>
+
+    <select id="paymentType">
+        <option value="Full Payment">Full Payment (Demo)</option>
+        <option value="Deposit">Partial Deposit (Demo)</option>
+    </select>
+
+    <button type="submit">Book Appointment</button>
+</form>
+
+<div id="bookingMessage"></div>
+</div>
+
+<div class="container" id="account">
+<h2>My Appointments</h2>
+<div id="appointmentHistory">No appointments yet.</div>
+</div>
+
+<div class="container" id="feedback">
+<h2>Customer Feedback</h2>
+<form id="feedbackForm">
+    <input id="feedbackName" placeholder="Your Name" required>
+    <select id="rating">
+        <option value="5">5 - Excellent</option>
+        <option value="4">4 - Very Good</option>
+        <option value="3">3 - Good</option>
+        <option value="2">2 - Average</option>
+        <option value="1">1 - Poor</option>
+    </select>
+    <textarea id="comments" placeholder="Your feedback" required></textarea>
+    <button type="submit">Submit Feedback</button>
+</form>
+<p id="feedbackMessage"></p>
+</div>
+
+<div class="container" id="admin">
+<h2>Salon Manager / Admin Login</h2>
+
+<form id="adminForm">
+    <input id="adminUsername" placeholder="Admin Username" required>
+    <input id="adminPassword" type="password" placeholder="Admin Password" required>
+    <button type="submit">Login as Admin</button>
+</form>
+
+<div id="adminPanel" hidden>
+    <h2>Admin Dashboard</h2>
+    <p id="report"></p>
+
+    <h3>Manage Appointments</h3>
+    <div id="adminAppointments"></div>
+
+    <h3>Add a New Service</h3>
+    <input id="newService" placeholder="Service Name">
+    <input id="newPrice" type="number" min="1" placeholder="Price in ₹">
+    <select id="newCategory">
+        <option>Hair</option>
+        <option>Skin</option>
+        <option>Makeup</option>
+        <option>Nails</option>
+    </select>
+    <button onclick="addService()">Add Service</button>
+
+    <button onclick="adminLogout()">Logout</button>
+</div>
+</div>
+
+<footer>
+    <p>Glamour Beauty Parlour | Online Appointment System</p>
+</footer>
+
+<script>
+let users = [];
+let appointments = [];
+let services = [
+    {name:"Haircut", category:"Hair", price:300},
+    {name:"Facial", category:"Skin", price:800},
+    {name:"Bridal Makeup", category:"Makeup", price:3000},
+    {name:"Manicure", category:"Nails", price:500}
+];
+
+let loggedInUser = null;
+let adminLoggedIn = false;
+let nextId = 1;
+
+const dateInput = document.getElementById("appointmentDate");
+dateInput.min = new Date().toLocaleDateString("en-CA");
+
+function displayServices() {
+    const query = document.getElementById("searchService").value.toLowerCase();
+    const category = document.getElementById("serviceCategory").value;
+
+    const filtered = services.filter(s =>
+        s.name.toLowerCase().includes(query) &&
+        (category === "All" || s.category === category)
+    );
+
+    document.getElementById("serviceList").innerHTML =
+        filtered.length ? filtered.map(s => `
+            <div class="card">
+                <h3>${s.name}</h3>
+                <p>Category: ${s.category}</p>
+                <p class="price">₹${s.price}</p>
+                <button onclick="selectService('${s.name}')">
+                    Book Now
+                </button>
+            </div>
+        `).join("") : "<p>No services found.</p>";
+}
+
+function selectService(name) {
+    document.getElementById("service").value = name;
+    document.getElementById("booking").scrollIntoView();
+}
+
+document.getElementById("searchService").addEventListener("input", displayServices);
+document.getElementById("serviceCategory").addEventListener("change", displayServices);
+
+document.getElementById("registerForm").onsubmit = function(e) {
+    e.preventDefault();
+
+    const email = document.getElementById("regEmail").value.trim().toLowerCase();
+
+    if (users.some(u => u.email === email)) {
+        document.getElementById("registerMessage").textContent =
+            "Email already registered.";
+        return;
+    }
+
+    users.push({
+        name: document.getElementById("regName").value.trim(),
+        email,
+        password: document.getElementById("regPassword").value
+    });
+
+    document.getElementById("registerMessage").textContent =
+        "Registration successful. Please log in.";
+    this.reset();
+};
+
+document.getElementById("loginForm").onsubmit = function(e) {
+    e.preventDefault();
+
+    const email = document.getElementById("loginEmail").value.trim().toLowerCase();
+    const password = document.getElementById("loginPassword").value;
+
+    const user = users.find(u => u.email === email && u.password === password);
+
+    loggedInUser = user || null;
+
+    document.getElementById("loginMessage").textContent = user
+        ? "Welcome " + user.name + "! Login successful."
+        : "Invalid login. Please register first.";
+
+    if (user) {
+        document.getElementById("customer").value = user.name;
+        displayAppointments();
+    }
+};
+
+document.getElementById("bookingForm").onsubmit = function(e) {
+    e.preventDefault();
+
+    if (!loggedInUser) {
+        alert("Please register and log in before booking.");
+        return;
+    }
+
+    const date = dateInput.value;
+    const time = document.getElementById("appointmentTime").value;
+    const stylist = document.getElementById("stylist").value;
+    const serviceName = document.getElementById("service").value;
+
+    if (date < new Date().toLocaleDateString("en-CA")) {
+        alert("Select a current or future date.");
+        return;
+    }
+
+    const conflict = appointments.some(a =>
+        a.date === date &&
+        a.time === time &&
+        a.stylist === stylist &&
+        a.status === "Booked"
+    );
+
+    if (conflict) {
+        alert("This stylist is already booked at that time.");
+        return;
+    }
+
+    const selected = services.find(s => s.name === serviceName);
+    if (!selected) {
+        alert("Please select a valid service.");
+        return;
+    }
+
+    const payment = document.getElementById("paymentType").value;
+    const amount = payment === "Deposit"
+        ? Math.ceil(selected.price * 0.25)
+        : selected.price;
+
+    const appointment = {
+        id: "SAL" + String(nextId++).padStart(4, "0"),
+        customer: loggedInUser.name,
+        email: loggedInUser.email,
+        phone: document.getElementById("customerPhone").value,
+        service: serviceName,
+        stylist,
+        date,
+        time,
+        amount,
+        payment,
+        status: "Booked"
+    };
+
+    appointments.push(appointment);
+
+    document.getElementById("bookingMessage").innerHTML = `
+        <div class="result">
+            <h3>Appointment Booked Successfully!</h3>
+            <p>Booking ID: ${appointment.id}</p>
+            <p>Service: ${appointment.service}</p>
+            <p>Stylist: ${appointment.stylist}</p>
+            <p>Date: ${appointment.date}</p>
+            <p>Time: ${appointment.time}</p>
+            <p>Amount due in demo: ₹${amount}</p>
+            <p>Status: ${appointment.status}</p>
+            <p>Payment is simulated; no money has been charged.</p>
+        </div>
+    `;
+
+    displayAppointments();
+    updateAdmin();
+    this.reset();
+};
+
+function displayAppointments() {
+    const mine = appointments.filter(a =>
+        loggedInUser && a.email === loggedInUser.email
+    );
+
+    const output = document.getElementById("appointmentHistory");
+
+    if (!mine.length) {
+        output.textContent = "No appointments yet.";
+        return;
+    }
+
+    output.innerHTML = mine.map(a => `
+        <div class="result">
+            <b>Booking ID:</b> ${a.id}
+            <p>Service: ${a.service}</p>
+            <p>Stylist: ${a.stylist}</p>
+            <p>Date: ${a.date} | Time: ${a.time}</p>
+            <p>Status: ${a.status}</p>
+            ${a.status === "Booked" ? `
+                <button onclick="cancelAppointment('${a.id}')">
+                    Cancel Appointment
+                </button>
+            ` : ""}
+        </div>
+    `).join("");
+}
+
+function cancelAppointment(id) {
+    const a = appointments.find(x => x.id === id);
+
+    if (!a || !loggedInUser || a.email !== loggedInUser.email ||
+        a.status !== "Booked") return;
+
+    a.status = "Cancelled";
+    displayAppointments();
+    updateAdmin();
+}
+
+document.getElementById("feedbackForm").onsubmit = function(e) {
+    e.preventDefault();
+    document.getElementById("feedbackMessage").textContent =
+        "Thank you for your feedback!";
+    this.reset();
+};
+
+// Demo admin credentials: admin / admin123
+document.getElementById("adminForm").onsubmit = function(e) {
+    e.preventDefault();
+
+    if (document.getElementById("adminUsername").value === "admin" &&
+        document.getElementById("adminPassword").value === "admin123") {
+        adminLoggedIn = true;
+        document.getElementById("adminPanel").hidden = false;
+        updateAdmin();
+    } else {
+        alert("Invalid admin credentials.");
+    }
+};
+
+function updateAdmin() {
+    if (!adminLoggedIn) return;
+
+    document.getElementById("report").textContent =
+        "Total appointments: " + appointments.length +
+        " | Active bookings: " +
+        appointments.filter(a => a.status === "Booked").length;
+
+    const output = document.getElementById("adminAppointments");
+
+    if (!appointments.length) {
+        output.textContent = "No appointments available.";
+        return;
+    }
+
+    output.innerHTML = appointments.map(a => `
+        <div class="result">
+            <p><b>${a.id}</b> - ${a.customer}</p>
+            <p>${a.service} | ${a.date} | ${a.time}</p>
+            <p>Stylist: ${a.stylist} | Status: ${a.status}</p>
+            <button onclick="contactCustomer('${a.id}')">Show Contact</button>
+            <select id="status-${a.id}">
+                <option>Booked</option>
+                <option>Completed</option>
+                <option>Cancelled</option>
+            </select>
+            <button onclick="changeStatus('${a.id}')">Update Status</button>
+        </div>
+    `).join("");
+
+    appointments.forEach(a => {
+        document.getElementById("status-" + a.id).value = a.status;
+    });
+}
+
+function contactCustomer(id) {
+    if (!adminLoggedIn) return;
+    const a = appointments.find(x => x.id === id);
+    if (a) alert("Customer: " + a.customer + "\nPhone: " + a.phone);
+}
+
+function changeStatus(id) {
+    if (!adminLoggedIn) return;
+
+    const a = appointments.find(x => x.id === id);
+    if (!a) return;
+
+    a.status = document.getElementById("status-" + id).value;
+    displayAppointments();
+    updateAdmin();
+}
+
+function addService() {
+    if (!adminLoggedIn) return;
+
+    const name = document.getElementById("newService").value.trim();
+    const price = Number(document.getElementById("newPrice").value);
+    const category = document.getElementById("newCategory").value;
+
+    if (!name || !Number.isFinite(price) || price <= 0) {
+        alert("Enter a valid service name and price.");
+        return;
+    }
+
+    if (services.some(s => s.name.toLowerCase() === name.toLowerCase())) {
+        alert("Service already exists.");
+        return;
+    }
+
+    services.push({name, category, price});
+    displayServices();
+    alert("Service added successfully.");
+}
+
+function adminLogout() {
+    adminLoggedIn = false;
+    document.getElementById("adminPanel").hidden = true;
+    document.getElementById("adminForm").reset();
+}
+
+displayServices();
+</script>
+
+</body>
+</html>

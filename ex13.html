@@ -1,0 +1,783 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BlossomGifts - Flowers & Gifts</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+body {
+    margin: 0;
+    background: #fff8fa;
+    color: #42333b;
+}
+header {
+    background: #8d2857;
+    color: white;
+    padding: 18px 7%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+header h1 span {
+    color: #ffd5e4;
+}
+nav a {
+    color: white;
+    text-decoration: none;
+    margin: 7px;
+}
+.hero {
+    background: linear-gradient(120deg, #8d2857, #d86b91);
+    color: white;
+    text-align: center;
+    padding: 45px 15px;
+}
+.hero h2 {
+    font-size: 32px;
+}
+.container {
+    padding: 30px 7%;
+}
+.panel {
+    background: white;
+    padding: 22px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    box-shadow: 0 3px 12px #6e254012;
+}
+input, select, textarea, button {
+    padding: 11px;
+    margin: 5px 3px;
+    border: 1px solid #e1cbd5;
+    border-radius: 6px;
+    font-size: 14px;
+}
+button {
+    background: #a83268;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+button:hover {
+    background: #81234f;
+}
+.secondary {
+    background: #f7e4ed;
+    color: #81234f;
+}
+.danger {
+    background: #c0392b;
+}
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 20px;
+}
+.card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 3px 12px #6e254015;
+}
+.card img {
+    width: 100%;
+    height: 190px;
+    object-fit: cover;
+}
+.card-content {
+    padding: 16px;
+}
+.card p {
+    color: #6d5963;
+    font-size: 14px;
+}
+.price {
+    color: #a83268;
+    font-size: 21px;
+    font-weight: bold;
+}
+.actions {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+}
+.hidden {
+    display: none;
+}
+.message {
+    color: #a83268;
+    font-weight: bold;
+}
+footer {
+    background: #8d2857;
+    color: white;
+    text-align: center;
+    padding: 22px;
+}
+@media(max-width:600px) {
+    header {
+        justify-content: center;
+        text-align: center;
+    }
+    .hero h2 {
+        font-size: 25px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>🌸 Blossom<span>Gifts</span></h1>
+    <nav>
+        <a href="#home">Home</a>
+        <a href="#shop">Shop</a>
+        <a href="#cart">Cart (<span id="cartCount">0</span>)</a>
+        <a href="#account">Login</a>
+        <a href="#orders">My Orders</a>
+        <a href="#admin">Admin</a>
+    </nav>
+</header>
+
+<section class="hero" id="home">
+    <h2>Make Every Moment Bloom 🌷</h2>
+    <p>Beautiful flowers and thoughtful gifts for every occasion.</p>
+    <button onclick="document.getElementById('shop').scrollIntoView()">
+        Shop Now
+    </button>
+</section>
+
+<main class="container">
+
+<section class="panel">
+    <h2>Shop by Category</h2>
+    <button onclick="chooseCategory('Flowers')">Flowers</button>
+    <button onclick="chooseCategory('Gift Baskets')">Gift Baskets</button>
+    <button onclick="chooseCategory('Personalized Gifts')">Personalized Gifts</button>
+    <button onclick="chooseCategory('Chocolate Gifts')">Chocolate Gifts</button>
+    <button onclick="chooseCategory('')">All Products</button>
+
+    <p>Popular occasions: Birthday, Anniversary, Wedding, Valentine's Day and Congratulations.</p>
+</section>
+
+<section class="panel" id="shop">
+    <h2>Our Gift Collection</h2>
+
+    <input id="search" placeholder="Search flowers and gifts">
+    <select id="category">
+        <option value="">All Categories</option>
+        <option value="Flowers">Flowers</option>
+        <option value="Gift Baskets">Gift Baskets</option>
+        <option value="Personalized Gifts">Personalized Gifts</option>
+        <option value="Chocolate Gifts">Chocolate Gifts</option>
+    </select>
+
+    <select id="occasion">
+        <option value="">All Occasions</option>
+        <option value="Birthday">Birthday</option>
+        <option value="Anniversary">Anniversary</option>
+        <option value="Wedding">Wedding</option>
+        <option value="Congratulations">Congratulations</option>
+    </select>
+
+    <select id="maxPrice">
+        <option value="">Any Price</option>
+        <option value="500">Under ₹500</option>
+        <option value="1000">Under ₹1,000</option>
+        <option value="2000">Under ₹2,000</option>
+    </select>
+
+    <button onclick="renderProducts()">Search</button>
+    <div id="productList" class="grid"></div>
+</section>
+
+<section class="panel" id="account">
+    <h2>Customer Login / Registration</h2>
+    <input id="username" placeholder="Username">
+    <input id="password" type="password" placeholder="Password">
+
+    <button onclick="register()">Register</button>
+    <button onclick="login()">Login</button>
+    <button class="secondary" onclick="logout()">Logout</button>
+    <p id="accountMessage" class="message"></p>
+</section>
+
+<section class="panel" id="cart">
+    <h2>Shopping Cart</h2>
+    <div id="cartItems"></div>
+    <h3 id="total">Total: ₹0</h3>
+    <button onclick="checkout()">Checkout</button>
+    <button class="secondary" onclick="clearCart()">Clear Cart</button>
+    <p id="checkoutMessage" class="message"></p>
+</section>
+
+<section class="panel" id="delivery">
+    <h2>Delivery Details</h2>
+    <input id="recipient" placeholder="Recipient name">
+    <input id="phone" placeholder="Phone number">
+    <input id="address" placeholder="Delivery address">
+    <label>Delivery date:</label>
+    <input type="date" id="deliveryDate">
+    <select id="deliveryTime">
+        <option value="Morning">Morning (9 AM - 12 PM)</option>
+        <option value="Afternoon">Afternoon (12 PM - 4 PM)</option>
+        <option value="Evening">Evening (4 PM - 8 PM)</option>
+    </select>
+</section>
+
+<section class="panel" id="orders">
+    <h2>Order Tracking & History</h2>
+    <input id="orderNumber" placeholder="Enter order ID">
+    <button onclick="trackOrder()">Track Order</button>
+    <p id="trackingMessage" class="message"></p>
+    <div id="orderHistory"></div>
+</section>
+
+<section class="panel">
+    <h2>Contact Us by Email</h2>
+    <input id="emailSubject" placeholder="Subject">
+    <textarea id="emailMessage" placeholder="Write your inquiry"></textarea>
+    <button onclick="sendInquiry()">Send Inquiry</button>
+    <p id="emailResult" class="message"></p>
+</section>
+
+<section class="panel" id="admin">
+    <h2>Admin Dashboard</h2>
+    <p>Manage products, inventory, prices, and customer order information.</p>
+
+    <input id="productName" placeholder="Product name">
+    <input id="productPrice" type="number" placeholder="Price (₹)">
+
+    <select id="productCategory">
+        <option value="Flowers">Flowers</option>
+        <option value="Gift Baskets">Gift Baskets</option>
+        <option value="Personalized Gifts">Personalized Gifts</option>
+        <option value="Chocolate Gifts">Chocolate Gifts</option>
+    </select>
+
+    <input id="productOccasion" placeholder="Occasion">
+    <input id="productStock" type="number" placeholder="Stock quantity">
+    <input id="productImage" placeholder="Image URL (optional)">
+    <input id="productDescription" placeholder="Description">
+
+    <button onclick="addProduct()">Add Product</button>
+    <div id="adminProducts"></div>
+
+    <h3>Customer Order Information</h3>
+    <div id="adminOrders"></div>
+
+    <h3>Registered Customers</h3>
+    <div id="adminCustomers"></div>
+</section>
+
+</main>
+
+<footer>
+    <p>© 2026 BlossomGifts | Send Love, Send Flowers 🌸</p>
+</footer>
+
+<script>
+let products = [
+    {
+        id: 1,
+        name: "Red Rose Bouquet",
+        category: "Flowers",
+        occasion: "Anniversary",
+        price: 799,
+        stock: 15,
+        image: "https://images.unsplash.com/photo-1494972308805-463bc619d34e?w=800",
+        description: "Beautiful red roses for someone special."
+    },
+    {
+        id: 2,
+        name: "Birthday Gift Basket",
+        category: "Gift Baskets",
+        occasion: "Birthday",
+        price: 1200,
+        stock: 10,
+        image: "https://images.unsplash.com/photo-1513201099705-a9746e1e201f?w=800",
+        description: "A lovely basket filled with thoughtful gifts."
+    },
+    {
+        id: 3,
+        name: "Personalized Gift Box",
+        category: "Personalized Gifts",
+        occasion: "Congratulations",
+        price: 950,
+        stock: 12,
+        image: "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=800",
+        description: "A special gift box for memorable moments."
+    },
+    {
+        id: 4,
+        name: "Chocolate Gift Pack",
+        category: "Chocolate Gifts",
+        occasion: "Birthday",
+        price: 450,
+        stock: 20,
+        image: "https://images.unsplash.com/photo-1548907040-4d42daa3a6f6?w=800",
+        description: "A delicious chocolate gift for any occasion."
+    }
+];
+
+let users = [];
+let cart = [];
+let orders = [];
+let currentUser = null;
+
+function money(amount) {
+    return "₹" + Number(amount).toLocaleString("en-IN");
+}
+
+function chooseCategory(category) {
+    document.getElementById("category").value = category;
+    renderProducts();
+    document.getElementById("shop").scrollIntoView();
+}
+
+function renderProducts() {
+    const search = document.getElementById("search").value.toLowerCase();
+    const category = document.getElementById("category").value;
+    const occasion = document.getElementById("occasion").value;
+    const maxPrice = Number(document.getElementById("maxPrice").value);
+
+    const results = products.filter(p =>
+        p.name.toLowerCase().includes(search) &&
+        (!category || p.category === category) &&
+        (!occasion || p.occasion === occasion) &&
+        (!maxPrice || p.price < maxPrice)
+    );
+
+    document.getElementById("productList").innerHTML =
+        results.map(p => `
+            <div class="card">
+                <img src="${p.image}" alt="${p.name}"
+                     onerror="this.src='https://placehold.co/600x400?text=Gift'">
+                <div class="card-content">
+                    <h3>${p.name}</h3>
+                    <p>${p.category} | ${p.occasion}</p>
+                    <p>${p.description}</p>
+                    <p>Available stock: ${p.stock}</p>
+                    <p class="price">${money(p.price)}</p>
+                    <button onclick="details(${p.id})">Details</button>
+                    <button onclick="addToCart(${p.id})">Add to Cart</button>
+                </div>
+            </div>
+        `).join("") || "<p>No products found.</p>";
+}
+
+function details(id) {
+    const p = products.find(item => item.id === id);
+    alert(
+        "Product Details\n\n" + p.name +
+        "\nCategory: " + p.category +
+        "\nOccasion: " + p.occasion +
+        "\nPrice: " + money(p.price) +
+        "\nAvailable stock: " + p.stock +
+        "\nDescription: " + p.description
+    );
+}
+
+function register() {
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value;
+
+    if (!username || !password) {
+        alert("Enter username and password.");
+        return;
+    }
+
+    if (users.some(u => u.username === username)) {
+        alert("Username already exists.");
+        return;
+    }
+
+    users.push({username, password});
+    document.getElementById("accountMessage").textContent =
+        "Registration successful. Please log in.";
+    renderAdmin();
+}
+
+function login() {
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value;
+
+    const user = users.find(u =>
+        u.username === username && u.password === password
+    );
+
+    if (!user) {
+        alert("Invalid login. Please register first.");
+        return;
+    }
+
+    currentUser = username;
+    document.getElementById("accountMessage").textContent =
+        "Welcome, " + currentUser + "!";
+    renderOrders();
+}
+
+function logout() {
+    currentUser = null;
+    document.getElementById("accountMessage").textContent = "Logged out.";
+}
+
+function addToCart(id) {
+    const p = products.find(item => item.id === id);
+
+    if (p.stock <= 0) {
+        alert("This product is out of stock.");
+        return;
+    }
+
+    const existing = cart.find(item => item.id === id);
+
+    if (existing) {
+        if (existing.quantity >= p.stock) {
+            alert("No more stock available.");
+            return;
+        }
+        existing.quantity++;
+    } else {
+        cart.push({id, quantity: 1});
+    }
+
+    renderCart();
+}
+
+function changeQuantity(id, amount) {
+    const item = cart.find(i => i.id === id);
+    const p = products.find(i => i.id === id);
+
+    if (!item) return;
+
+    if (item.quantity + amount > p.stock) {
+        alert("Requested quantity exceeds stock.");
+        return;
+    }
+
+    item.quantity += amount;
+
+    if (item.quantity <= 0) {
+        cart = cart.filter(i => i.id !== id);
+    }
+
+    renderCart();
+}
+
+function removeFromCart(id) {
+    cart = cart.filter(i => i.id !== id);
+    renderCart();
+}
+
+function renderCart() {
+    const list = document.getElementById("cartItems");
+    let total = 0;
+    let count = 0;
+
+    list.innerHTML = cart.map(item => {
+        const p = products.find(i => i.id === item.id);
+        const subtotal = p.price * item.quantity;
+        total += subtotal;
+        count += item.quantity;
+
+        return `<div class="card" style="padding:15px;margin:10px 0">
+            <strong>${p.name}</strong>
+            <p>${money(p.price)} × ${item.quantity} = ${money(subtotal)}</p>
+            <button onclick="changeQuantity(${p.id},-1)">−</button>
+            <button onclick="changeQuantity(${p.id},1)">+</button>
+            <button class="danger" onclick="removeFromCart(${p.id})">Remove</button>
+        </div>`;
+    }).join("") || "<p>Your cart is empty.</p>";
+
+    document.getElementById("total").textContent = "Total: " + money(total);
+    document.getElementById("cartCount").textContent = count;
+}
+
+function clearCart() {
+    cart = [];
+    renderCart();
+}
+
+function checkout() {
+    if (!currentUser) {
+        alert("Please log in before checkout.");
+        return;
+    }
+
+    if (cart.length === 0) {
+        alert("Your shopping cart is empty.");
+        return;
+    }
+
+    const recipient = document.getElementById("recipient").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const address = document.getElementById("address").value.trim();
+    const date = document.getElementById("deliveryDate").value;
+    const time = document.getElementById("deliveryTime").value;
+
+    if (!recipient || !phone || !address || !date) {
+        alert("Please complete all delivery details.");
+        return;
+    }
+
+    if (date < new Date().toISOString().slice(0, 10)) {
+        alert("Choose a future delivery date.");
+        return;
+    }
+
+    for (const item of cart) {
+        const p = products.find(i => i.id === item.id);
+        if (!p || p.stock < item.quantity) {
+            alert("Insufficient stock for an item in your cart.");
+            return;
+        }
+    }
+
+    let total = 0;
+    const items = cart.map(item => {
+        const p = products.find(i => i.id === item.id);
+        p.stock -= item.quantity;
+        total += p.price * item.quantity;
+        return {
+            name: p.name,
+            quantity: item.quantity,
+            price: p.price
+        };
+    });
+
+    const order = {
+        id: "BG" + Date.now().toString().slice(-7),
+        username: currentUser,
+        recipient,
+        phone,
+        address,
+        date,
+        time,
+        items,
+        total,
+        status: "Order Confirmed"
+    };
+
+    orders.push(order);
+    cart = [];
+
+    document.getElementById("checkoutMessage").textContent =
+        "Order placed successfully! Order ID: " + order.id;
+
+    renderCart();
+    renderProducts();
+    renderOrders();
+    renderAdmin();
+}
+
+function trackOrder() {
+    const id = document.getElementById("orderNumber").value.trim();
+    const order = orders.find(o =>
+        o.id === id && (currentUser === o.username)
+    );
+
+    document.getElementById("trackingMessage").textContent = order
+        ? "Order " + order.id + ": " + order.status +
+          ". Delivery date: " + order.date + " (" + order.time + ")."
+        : "Order not found. Log in with the account used to place it.";
+}
+
+function renderOrders() {
+    const mine = currentUser
+        ? orders.filter(o => o.username === currentUser)
+        : [];
+
+    document.getElementById("orderHistory").innerHTML = mine.length
+        ? mine.map(o => `
+            <div class="card" style="padding:15px;margin:10px 0">
+                <strong>Order ID: ${o.id}</strong>
+                <p>Total: ${money(o.total)}</p>
+                <p>Delivery: ${o.date} — ${o.time}</p>
+                <p>Status: ${o.status}</p>
+                <button onclick="trackOrderById('${o.id}')">Track Order</button>
+            </div>
+        `).join("")
+        : "<p>No order history available.</p>";
+}
+
+function trackOrderById(id) {
+    document.getElementById("orderNumber").value = id;
+    trackOrder();
+}
+
+function sendInquiry() {
+    const subject = document.getElementById("emailSubject").value.trim();
+    const message = document.getElementById("emailMessage").value.trim();
+
+    if (!subject || !message) {
+        alert("Enter a subject and message.");
+        return;
+    }
+
+    const mailto = "mailto:support@blossomgifts.example?subject=" +
+        encodeURIComponent(subject) + "&body=" +
+        encodeURIComponent(message);
+
+    document.getElementById("emailResult").textContent =
+        "Opening your email application to send the inquiry.";
+
+    window.location.href = mailto;
+}
+
+function addProduct() {
+    const name = document.getElementById("productName").value.trim();
+    const price = Number(document.getElementById("productPrice").value);
+    const category = document.getElementById("productCategory").value;
+    const occasion = document.getElementById("productOccasion").value.trim();
+    const stock = Number(document.getElementById("productStock").value);
+    const image = document.getElementById("productImage").value.trim();
+    const description =
+        document.getElementById("productDescription").value.trim();
+
+    if (!name || price <= 0 || stock < 0) {
+        alert("Enter a product name, valid price, and stock quantity.");
+        return;
+    }
+
+    products.push({
+        id: Date.now(),
+        name,
+        category,
+        occasion: occasion || "All Occasions",
+        price,
+        stock,
+        image: image || "https://placehold.co/600x400?text=Gift",
+        description: description || "A lovely gift for a special occasion."
+    });
+
+    document.getElementById("productName").value = "";
+    document.getElementById("productPrice").value = "";
+    document.getElementById("productOccasion").value = "";
+    document.getElementById("productStock").value = "";
+    document.getElementById("productImage").value = "";
+    document.getElementById("productDescription").value = "";
+
+    renderProducts();
+    renderAdmin();
+    alert("Product added successfully.");
+}
+
+function editProduct(id) {
+    const p = products.find(item => item.id === id);
+    const price = prompt("Enter new price:", p.price);
+    if (price === null) return;
+
+    if (!Number.isFinite(Number(price)) || Number(price) <= 0) {
+        alert("Enter a valid price.");
+        return;
+    }
+
+    const description = prompt("Enter new description:", p.description);
+    p.price = Number(price);
+
+    if (description !== null) {
+        p.description = description;
+    }
+
+    renderProducts();
+    renderAdmin();
+}
+
+function deleteProduct(id) {
+    products = products.filter(p => p.id !== id);
+    cart = cart.filter(i => i.id !== id);
+    renderProducts();
+    renderCart();
+    renderAdmin();
+}
+
+function updateOrderStatus(id) {
+    const order = orders.find(o => o.id === id);
+    const statuses = [
+        "Order Confirmed",
+        "Preparing",
+        "Out for Delivery",
+        "Delivered"
+    ];
+
+    const next = (statuses.indexOf(order.status) + 1) % statuses.length;
+    order.status = statuses[next];
+
+    renderOrders();
+    renderAdmin();
+}
+
+function renderAdmin() {
+    document.getElementById("adminProducts").innerHTML =
+        "<h3>Inventory Management</h3>" +
+        products.map(p => `
+            <div class="card" style="padding:12px;margin:8px 0">
+                <strong>${p.name}</strong>
+                <p>Price: ${money(p.price)} | Stock: ${p.stock}</p>
+                <button onclick="editProduct(${p.id})">Edit</button>
+                <button class="danger" onclick="deleteProduct(${p.id})">Delete</button>
+            </div>
+        `).join("");
+
+    document.getElementById("adminOrders").innerHTML = orders.length
+        ? orders.map(o => `
+            <div class="card" style="padding:12px;margin:8px 0">
+                <strong>${o.id}</strong>
+                <p>Customer: ${o.username}</p>
+                <p>Recipient: ${o.recipient}</p>
+                <p>Phone: ${o.phone}</p>
+                <p>Address: ${o.address}</p>
+                <p>Total: ${money(o.total)}</p>
+                <p>Status: ${o.status}</p>
+                <button onclick="updateOrderStatus('${o.id}')">
+                    Update Order Status
+                </button>
+            </div>
+        `).join("")
+        : "<p>No customer orders yet.</p>";
+
+    document.getElementById("adminCustomers").innerHTML = users.length
+        ? users.map(u => `
+            <div class="card" style="padding:10px;margin:8px 0">
+                <p>Username: ${u.username}</p>
+                <button class="danger"
+                    onclick="deleteCustomer('${u.username}')">Delete Customer</button>
+            </div>
+        `).join("")
+        : "<p>No registered customers.</p>";
+}
+
+function deleteCustomer(username) {
+    if (!confirm("Delete customer " + username + "?")) return;
+
+    users = users.filter(u => u.username !== username);
+    orders = orders.filter(o => o.username !== username);
+
+    if (currentUser === username) {
+        currentUser = null;
+        document.getElementById("accountMessage").textContent =
+            "Customer account deleted.";
+    }
+
+    renderAdmin();
+    renderOrders();
+}
+
+renderProducts();
+renderCart();
+renderOrders();
+renderAdmin();
+</script>
+
+</body>
+</html>

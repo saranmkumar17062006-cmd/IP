@@ -1,0 +1,790 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Home Finder - Real Estate</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: #f4f7fb;
+    color: #263445;
+}
+
+header {
+    background: #123b5d;
+    color: white;
+    padding: 20px 7%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+header h1 span {
+    color: #55dfb4;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin: 0 8px;
+    cursor: pointer;
+}
+
+.hero {
+    background: linear-gradient(120deg, #123b5d, #287e91);
+    color: white;
+    text-align: center;
+    padding: 55px 20px;
+}
+
+.hero h2 {
+    font-size: 34px;
+    margin-bottom: 12px;
+}
+
+.hero p {
+    margin-bottom: 25px;
+}
+
+.search-box {
+    background: white;
+    padding: 20px;
+    max-width: 1000px;
+    margin: auto;
+    border-radius: 12px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+input, select, button {
+    padding: 11px;
+    border: 1px solid #d4dce5;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.search-box input,
+.search-box select {
+    flex: 1;
+    min-width: 140px;
+}
+
+button {
+    background: #087f69;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #065e50;
+}
+
+.container {
+    padding: 35px 7%;
+}
+
+.section-title {
+    margin-bottom: 20px;
+}
+
+.property-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 22px;
+}
+
+.card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 14px #00000012;
+}
+
+.card img {
+    width: 100%;
+    height: 190px;
+    object-fit: cover;
+}
+
+.card-content {
+    padding: 17px;
+}
+
+.card h3 {
+    margin-bottom: 9px;
+}
+
+.price {
+    color: #087f69;
+    font-size: 21px;
+    font-weight: bold;
+    margin: 12px 0;
+}
+
+.card p {
+    margin: 8px 0;
+    color: #5c6875;
+    font-size: 14px;
+}
+
+.actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+}
+
+.actions button {
+    flex: 1;
+}
+
+.secondary {
+    background: #e8f2f5;
+    color: #123b5d;
+}
+
+.secondary:hover {
+    background: #d4e6ed;
+}
+
+.panel {
+    background: white;
+    border-radius: 10px;
+    padding: 22px;
+    margin-top: 25px;
+    box-shadow: 0 3px 12px #00000010;
+}
+
+.panel input,
+.panel select {
+    margin: 5px;
+    max-width: 100%;
+}
+
+.hidden {
+    display: none;
+}
+
+#message {
+    margin: 15px 0;
+    color: #087f69;
+    font-weight: bold;
+}
+
+footer {
+    background: #123b5d;
+    color: white;
+    text-align: center;
+    padding: 22px;
+    margin-top: 35px;
+}
+
+@media(max-width:600px) {
+    header {
+        justify-content: center;
+        text-align: center;
+    }
+
+    .hero h2 {
+        font-size: 27px;
+    }
+
+    nav {
+        line-height: 2;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>🏡 Home<span>Finder</span></h1>
+    <nav>
+        <a href="#home">Home</a>
+        <a href="#properties">Properties</a>
+        <a href="#agents">Agents</a>
+        <a href="#account">Login</a>
+        <a href="#admin">Admin</a>
+    </nav>
+</header>
+
+<section class="hero" id="home">
+    <h2>Find a Place You'll Love</h2>
+    <p>Discover houses, apartments and land within your budget.</p>
+
+    <div class="search-box">
+        <input type="text" id="location" placeholder="Enter city or area">
+
+        <select id="type">
+            <option value="">All Property Types</option>
+            <option value="House">House</option>
+            <option value="Apartment">Apartment</option>
+            <option value="Land">Land</option>
+            <option value="Commercial">Commercial</option>
+        </select>
+
+        <input type="number" id="maxPrice"
+               placeholder="Maximum budget (₹)">
+
+        <button onclick="searchProperties()">Search</button>
+        <button class="secondary" onclick="resetSearch()">Reset</button>
+    </div>
+</section>
+
+<main class="container">
+    <h2 class="section-title" id="properties">Available Properties</h2>
+
+    <p id="resultCount"></p>
+    <div id="message"></div>
+    <div class="property-grid" id="propertyList"></div>
+
+    <section class="panel" id="account">
+        <h2>Buyer Login / Registration</h2>
+        <p>Create an account or sign in to save your searches and favorite properties.</p>
+        <br>
+
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+
+        <button onclick="registerUser()">Register</button>
+        <button onclick="loginUser()">Login</button>
+        <button class="secondary" onclick="logoutUser()">Logout</button>
+
+        <p id="userMessage"></p>
+    </section>
+
+    <section class="panel">
+        <h2>Saved Search</h2>
+        <p>Save your current search criteria for later use.</p>
+        <br>
+        <button onclick="saveSearch()">Save Current Search</button>
+        <button class="secondary" onclick="loadSearch()">Load Saved Search</button>
+        <p id="savedSearchMessage"></p>
+    </section>
+
+    <section class="panel">
+        <h2>My Favorite Properties</h2>
+        <div id="favoritesList"></div>
+    </section>
+
+    <section class="panel">
+        <h2>Property Viewing Appointment</h2>
+        <p>Select a property and request a viewing appointment.</p>
+        <br>
+        <select id="appointmentProperty"></select>
+        <input type="date" id="appointmentDate">
+        <button onclick="bookViewing()">Request Viewing</button>
+        <p id="appointmentMessage"></p>
+    </section>
+
+    <section class="panel" id="agents">
+        <h2>Find Real Estate Agents</h2>
+        <input type="text" id="agentSearch"
+               placeholder="Search by agent name or area">
+        <button onclick="searchAgents()">Search Agents</button>
+        <div id="agentList"></div>
+    </section>
+
+    <section class="panel">
+        <h2>Property Location Map</h2>
+        <p>Select a property to view its location on Google Maps.</p>
+        <br>
+        <select id="mapProperty"></select>
+        <button onclick="openMap()">View on Google Maps</button>
+    </section>
+
+    <section class="panel">
+        <h2>Mortgage Calculator</h2>
+        <input type="number" id="loanAmount" placeholder="Loan amount (₹)">
+        <input type="number" id="interestRate" placeholder="Annual interest (%)">
+        <input type="number" id="loanYears" placeholder="Loan period (years)">
+        <button onclick="calculateMortgage()">Calculate EMI</button>
+        <p id="emiResult"></p>
+    </section>
+
+    <section class="panel">
+        <h2>Admin Dashboard</h2>
+        <p>Add new properties and manage existing listings.</p>
+        <br>
+
+        <input id="adminTitle" placeholder="Property name">
+        <input id="adminLocation" placeholder="Location">
+        <input id="adminPrice" type="number" placeholder="Price (₹)">
+
+        <select id="adminType">
+            <option value="House">House</option>
+            <option value="Apartment">Apartment</option>
+            <option value="Land">Land</option>
+            <option value="Commercial">Commercial</option>
+        </select>
+
+        <input id="adminImage" placeholder="Image URL (optional)">
+        <input id="adminBeds" type="number" placeholder="Bedrooms">
+        <input id="adminDescription" placeholder="Description">
+
+        <button onclick="addProperty()">Add Property</button>
+        <div id="adminList"></div>
+
+        <h3 style="margin-top:20px">Registered Buyers</h3>
+        <div id="customerList"></div>
+
+        <h3 style="margin-top:20px">Viewing Requests</h3>
+        <div id="bookingList"></div>
+    </section>
+</main>
+
+<footer>
+    <p>© 2026 Home Finder | Your Dream Property, One Click Away</p>
+</footer>
+
+<script>
+let properties = [
+    {
+        id: 1,
+        title: "Modern Family House",
+        location: "Chennai",
+        price: 7500000,
+        type: "House",
+        beds: 3,
+        image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800",
+        description: "Spacious family house with a garden."
+    },
+    {
+        id: 2,
+        title: "Luxury City Apartment",
+        location: "Tambaram",
+        price: 4500000,
+        type: "Apartment",
+        beds: 2,
+        image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800",
+        description: "Modern apartment close to public transport."
+    },
+    {
+        id: 3,
+        title: "Residential Plot",
+        location: "Coimbatore",
+        price: 1800000,
+        type: "Land",
+        beds: 0,
+        image: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800",
+        description: "Residential land suitable for building a home."
+    },
+    {
+        id: 4,
+        title: "Commercial Office Space",
+        location: "Chennai",
+        price: 9500000,
+        type: "Commercial",
+        beds: 0,
+        image: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=800",
+        description: "Office space suitable for a growing business."
+    }
+];
+
+let agents = [
+    {name: "Arun Kumar", area: "Chennai", phone: "9000000001"},
+    {name: "Priya Sharma", area: "Tambaram", phone: "9000000002"},
+    {name: "Karthik Raj", area: "Coimbatore", phone: "9000000003"}
+];
+
+let users = [];
+let favorites = [];
+let bookings = [];
+let currentUser = null;
+let visibleProperties = [...properties];
+
+function formatPrice(price) {
+    return "₹" + Number(price).toLocaleString("en-IN");
+}
+
+function renderProperties(items = properties) {
+    visibleProperties = items;
+    const list = document.getElementById("propertyList");
+
+    document.getElementById("resultCount").textContent =
+        items.length + " properties found";
+
+    if (items.length === 0) {
+        list.innerHTML = "<p>No properties found. Try another search.</p>";
+        return;
+    }
+
+    list.innerHTML = items.map(p => `
+        <div class="card">
+            <img src="${p.image}" alt="${p.title}"
+                 onerror="this.src='https://placehold.co/600x400?text=Property'">
+            <div class="card-content">
+                <h3>${p.title}</h3>
+                <p>📍 ${p.location}</p>
+                <p>Type: ${p.type}</p>
+                <p>${p.beds ? p.beds + " Bedrooms" : "Land / Commercial Property"}</p>
+                <p class="price">${formatPrice(p.price)}</p>
+                <p>${p.description}</p>
+                <div class="actions">
+                    <button onclick="showDetails(${p.id})">Details</button>
+                    <button class="secondary"
+                        onclick="toggleFavorite(${p.id})">♡ Favorite</button>
+                </div>
+            </div>
+        </div>
+    `).join("");
+
+    updatePropertySelects();
+}
+
+function searchProperties() {
+    const location = document.getElementById("location").value
+        .trim().toLowerCase();
+    const type = document.getElementById("type").value;
+    const maxPrice = Number(document.getElementById("maxPrice").value);
+
+    const results = properties.filter(p =>
+        p.location.toLowerCase().includes(location) &&
+        (!type || p.type === type) &&
+        (!maxPrice || p.price <= maxPrice)
+    );
+
+    renderProperties(results);
+    document.getElementById("message").textContent =
+        "Search completed successfully.";
+}
+
+function resetSearch() {
+    document.getElementById("location").value = "";
+    document.getElementById("type").value = "";
+    document.getElementById("maxPrice").value = "";
+    document.getElementById("message").textContent = "";
+    renderProperties(properties);
+}
+
+function showDetails(id) {
+    const p = properties.find(item => item.id === id);
+    alert(
+        "PROPERTY DETAILS\n\n" +
+        p.title + "\nLocation: " + p.location +
+        "\nType: " + p.type +
+        "\nPrice: " + formatPrice(p.price) +
+        "\nBedrooms: " + (p.beds || "Not applicable") +
+        "\nDescription: " + p.description
+    );
+}
+
+function registerUser() {
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value;
+
+    if (!username || !password) {
+        alert("Please enter a username and password.");
+        return;
+    }
+
+    if (users.some(u => u.username === username)) {
+        alert("Username already exists.");
+        return;
+    }
+
+    users.push({username, password});
+    document.getElementById("userMessage").textContent =
+        "Registration successful. Please log in.";
+}
+
+function loginUser() {
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value;
+
+    const user = users.find(u =>
+        u.username === username && u.password === password
+    );
+
+    if (!user) {
+        alert("Invalid login details. Register first.");
+        return;
+    }
+
+    currentUser = username;
+    document.getElementById("userMessage").textContent =
+        "Welcome, " + currentUser + "!";
+}
+
+function logoutUser() {
+    currentUser = null;
+    document.getElementById("userMessage").textContent = "Logged out.";
+}
+
+function saveSearch() {
+    if (!currentUser) {
+        alert("Please log in before saving a search.");
+        return;
+    }
+
+    const criteria = {
+        location: document.getElementById("location").value,
+        type: document.getElementById("type").value,
+        maxPrice: document.getElementById("maxPrice").value
+    };
+
+    localStorage.setItem("homeFinderSearch_" + currentUser,
+                         JSON.stringify(criteria));
+
+    document.getElementById("savedSearchMessage").textContent =
+        "Search criteria saved.";
+}
+
+function loadSearch() {
+    if (!currentUser) {
+        alert("Please log in first.");
+        return;
+    }
+
+    const saved = localStorage.getItem("homeFinderSearch_" + currentUser);
+
+    if (!saved) {
+        alert("No saved search found.");
+        return;
+    }
+
+    const criteria = JSON.parse(saved);
+    document.getElementById("location").value = criteria.location;
+    document.getElementById("type").value = criteria.type;
+    document.getElementById("maxPrice").value = criteria.maxPrice;
+
+    searchProperties();
+    document.getElementById("savedSearchMessage").textContent =
+        "Saved search loaded.";
+}
+
+function toggleFavorite(id) {
+    if (!currentUser) {
+        alert("Please log in to save favorite properties.");
+        return;
+    }
+
+    if (favorites.includes(id)) {
+        favorites = favorites.filter(item => item !== id);
+    } else {
+        favorites.push(id);
+    }
+
+    renderFavorites();
+}
+
+function renderFavorites() {
+    const list = document.getElementById("favoritesList");
+
+    const items = properties.filter(p => favorites.includes(p.id));
+
+    list.innerHTML = items.length
+        ? items.map(p =>
+            `<p>${p.title} - ${formatPrice(p.price)}</p>`
+          ).join("")
+        : "<p>No favorite properties saved.</p>";
+}
+
+function updatePropertySelects() {
+    const options = properties.map(p =>
+        `<option value="${p.id}">${p.title} - ${p.location}</option>`
+    ).join("");
+
+    document.getElementById("appointmentProperty").innerHTML = options;
+    document.getElementById("mapProperty").innerHTML = options;
+}
+
+function bookViewing() {
+    if (!currentUser) {
+        alert("Please log in before booking a viewing.");
+        return;
+    }
+
+    const propertyId = Number(
+        document.getElementById("appointmentProperty").value
+    );
+    const date = document.getElementById("appointmentDate").value;
+
+    if (!date) {
+        alert("Please select a viewing date.");
+        return;
+    }
+
+    const property = properties.find(p => p.id === propertyId);
+
+    bookings.push({
+        user: currentUser,
+        property: property.title,
+        date: date
+    });
+
+    document.getElementById("appointmentMessage").textContent =
+        "Viewing requested for " + property.title + " on " + date + ".";
+
+    renderBookings();
+}
+
+function searchAgents() {
+    const query = document.getElementById("agentSearch").value
+        .trim().toLowerCase();
+
+    const results = agents.filter(a =>
+        a.name.toLowerCase().includes(query) ||
+        a.area.toLowerCase().includes(query)
+    );
+
+    document.getElementById("agentList").innerHTML = results.length
+        ? results.map(a =>
+            `<p><strong>${a.name}</strong> — ${a.area} —
+             Phone: ${a.phone}</p>`
+          ).join("")
+        : "<p>No agents found.</p>";
+}
+
+function openMap() {
+    const id = Number(document.getElementById("mapProperty").value);
+    const property = properties.find(p => p.id === id);
+
+    if (property) {
+        const query = encodeURIComponent(property.location);
+        window.open(
+            "https://www.google.com/maps/search/?api=1&query=" + query,
+            "_blank"
+        );
+    }
+}
+
+function calculateMortgage() {
+    const amount = Number(document.getElementById("loanAmount").value);
+    const annualRate = Number(document.getElementById("interestRate").value);
+    const years = Number(document.getElementById("loanYears").value);
+
+    if (amount <= 0 || annualRate < 0 || years <= 0) {
+        alert("Enter valid loan details.");
+        return;
+    }
+
+    const monthlyRate = annualRate / 1200;
+    const months = years * 12;
+
+    const emi = monthlyRate === 0
+        ? amount / months
+        : amount * monthlyRate * Math.pow(1 + monthlyRate, months) /
+          (Math.pow(1 + monthlyRate, months) - 1);
+
+    document.getElementById("emiResult").textContent =
+        "Estimated monthly EMI: " +
+        formatPrice(Math.round(emi));
+}
+
+function addProperty() {
+    const title = document.getElementById("adminTitle").value.trim();
+    const location = document.getElementById("adminLocation").value.trim();
+    const price = Number(document.getElementById("adminPrice").value);
+    const type = document.getElementById("adminType").value;
+    const image = document.getElementById("adminImage").value.trim();
+    const beds = Number(document.getElementById("adminBeds").value);
+    const description =
+        document.getElementById("adminDescription").value.trim();
+
+    if (!title || !location || price <= 0) {
+        alert("Enter property name, location and a valid price.");
+        return;
+    }
+
+    properties.push({
+        id: Date.now(),
+        title,
+        location,
+        price,
+        type,
+        beds,
+        image: image || "https://placehold.co/600x400?text=Property",
+        description: description || "Contact us for more information."
+    });
+
+    renderProperties(properties);
+    renderAdmin();
+
+    document.getElementById("adminTitle").value = "";
+    document.getElementById("adminLocation").value = "";
+    document.getElementById("adminPrice").value = "";
+    document.getElementById("adminImage").value = "";
+    document.getElementById("adminBeds").value = "";
+    document.getElementById("adminDescription").value = "";
+
+    alert("Property added successfully.");
+}
+
+function deleteProperty(id) {
+    properties = properties.filter(p => p.id !== id);
+    favorites = favorites.filter(f => f !== id);
+
+    renderProperties(properties);
+    renderFavorites();
+    renderAdmin();
+}
+
+function editProperty(id) {
+    const property = properties.find(p => p.id === id);
+    const newPrice = prompt("Enter the new price:", property.price);
+
+    if (newPrice === null) return;
+
+    if (!Number.isFinite(Number(newPrice)) || Number(newPrice) <= 0) {
+        alert("Enter a valid price.");
+        return;
+    }
+
+    const newDescription = prompt(
+        "Enter the new description:",
+        property.description
+    );
+
+    property.price = Number(newPrice);
+
+    if (newDescription !== null) {
+        property.description = newDescription;
+    }
+
+    renderProperties(properties);
+    renderAdmin();
+}
+
+function renderAdmin() {
+    document.getElementById("adminList").innerHTML = properties.map(p =>
+        `<p>${p.title} — ${formatPrice(p.price)}
+        <button onclick="editProperty(${p.id})">Edit</button>
+        <button onclick="deleteProperty(${p.id})">Delete</button></p>`
+    ).join("");
+
+    document.getElementById("customerList").innerHTML = users.length
+        ? users.map(u => `<p>${u.username}</p>`).join("")
+        : "<p>No registered buyers in this session.</p>";
+}
+
+function renderBookings() {
+    document.getElementById("bookingList").innerHTML = bookings.length
+        ? bookings.map(b =>
+            `<p>${b.user} — ${b.property} — ${b.date}</p>`
+          ).join("")
+        : "<p>No viewing requests yet.</p>";
+}
+
+renderProperties();
+renderFavorites();
+renderAdmin();
+searchAgents();
+</script>
+
+</body>
+</html>

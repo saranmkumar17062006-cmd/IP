@@ -1,0 +1,745 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReNewMarket - Second-Hand Marketplace</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+body {
+    margin: 0;
+    background: #f3f7f3;
+    color: #26372c;
+}
+header {
+    background: #24583c;
+    color: white;
+    padding: 18px 7%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+header span {
+    color: #b8efb9;
+}
+nav a {
+    color: white;
+    text-decoration: none;
+    margin: 7px;
+}
+.hero {
+    background: linear-gradient(120deg, #24583c, #64a56b);
+    text-align: center;
+    color: white;
+    padding: 45px 15px;
+}
+.container {
+    padding: 30px 7%;
+}
+.panel {
+    background: white;
+    padding: 22px;
+    border-radius: 10px;
+    margin-bottom: 22px;
+    box-shadow: 0 3px 12px #00000010;
+}
+input, select, textarea, button {
+    padding: 11px;
+    margin: 5px 3px;
+    border: 1px solid #d0ded1;
+    border-radius: 5px;
+    font-size: 14px;
+}
+button {
+    background: #28784a;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+button:hover {
+    background: #1c5936;
+}
+.secondary {
+    background: #e5f2e7;
+    color: #24583c;
+}
+.danger {
+    background: #c0392b;
+}
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 20px;
+}
+.card {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 3px 12px #00000012;
+}
+.card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
+.card-content {
+    padding: 16px;
+}
+.price {
+    color: #28784a;
+    font-weight: bold;
+    font-size: 21px;
+}
+.message {
+    color: #28784a;
+    font-weight: bold;
+}
+footer {
+    background: #24583c;
+    color: white;
+    text-align: center;
+    padding: 20px;
+}
+@media(max-width:600px) {
+    header {
+        justify-content: center;
+        text-align: center;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>♻️ ReNew<span>Market</span></h1>
+    <nav>
+        <a href="#home">Home</a>
+        <a href="#market">Marketplace</a>
+        <a href="#account">Login</a>
+        <a href="#orders">My Orders</a>
+        <a href="#admin">Admin</a>
+    </nav>
+</header>
+
+<section class="hero" id="home">
+    <h2>Give Pre-Loved Items a New Life</h2>
+    <p>Buy, sell, and reuse items while helping the planet.</p>
+    <button onclick="document.getElementById('market').scrollIntoView()">
+        Explore Items
+    </button>
+</section>
+
+<main class="container">
+
+<section class="panel" id="account">
+    <h2>User Login / Registration</h2>
+    <input id="username" placeholder="Username">
+    <input id="password" type="password" placeholder="Password">
+
+    <select id="role">
+        <option value="Buyer">Buyer</option>
+        <option value="Seller">Seller</option>
+        <option value="Admin">Admin</option>
+    </select>
+
+    <button onclick="register()">Register</button>
+    <button onclick="login()">Login</button>
+    <button class="secondary" onclick="logout()">Logout</button>
+
+    <p id="accountMessage" class="message"></p>
+    <p>Demo admin login: <strong>admin</strong> / <strong>admin123</strong></p>
+</section>
+
+<section class="panel" id="market">
+    <h2>Browse Second-Hand Items</h2>
+
+    <input id="search" placeholder="Search products">
+    <select id="categoryFilter">
+        <option value="">All Categories</option>
+    </select>
+    <input id="maxPrice" type="number" placeholder="Maximum price (₹)">
+    <button onclick="renderProducts()">Search</button>
+
+    <div id="productList" class="grid"></div>
+</section>
+
+<section class="panel">
+    <h2>Sell an Item</h2>
+    <p>Logged-in sellers can create listings for their pre-loved goods.</p>
+
+    <input id="itemName" placeholder="Item name">
+    <select id="itemCategory"></select>
+    <input id="itemPrice" type="number" placeholder="Price (₹)">
+    <input id="itemImage" placeholder="Image URL (optional)">
+    <textarea id="itemDescription" placeholder="Item description"></textarea>
+    <button onclick="addListing()">Create Listing</button>
+    <p id="listingMessage" class="message"></p>
+</section>
+
+<section class="panel">
+    <h2>My Listings</h2>
+    <div id="myListings"></div>
+</section>
+
+<section class="panel">
+    <h2>Favorites</h2>
+    <div id="favoritesList"></div>
+</section>
+
+<section class="panel">
+    <h2>Negotiate Price</h2>
+    <select id="negotiateItem"></select>
+    <input id="offerPrice" type="number" placeholder="Your offer (₹)">
+    <button onclick="makeOffer()">Send Offer</button>
+    <div id="offersList"></div>
+</section>
+
+<section class="panel" id="orders">
+    <h2>My Orders and Delivery Status</h2>
+    <div id="orderList"></div>
+</section>
+
+<section class="panel" id="admin">
+    <h2>Admin Dashboard</h2>
+    <p>Manage users, categories, products, and orders.</p>
+
+    <h3>Add Category</h3>
+    <input id="newCategory" placeholder="Category name">
+    <button onclick="addCategory()">Add Category</button>
+
+    <h3>Category Management</h3>
+    <div id="categoryList"></div>
+
+    <h3>User Management</h3>
+    <div id="userList"></div>
+
+    <h3>Commodity Management</h3>
+    <div id="adminProducts"></div>
+
+    <h3>Order Management</h3>
+    <div id="adminOrders"></div>
+</section>
+
+</main>
+
+<footer>
+    <p>© 2026 ReNewMarket | Reuse More, Waste Less 🌱</p>
+</footer>
+
+<script>
+let users = [
+    {
+        username: "admin",
+        password: "admin123",
+        role: "Admin"
+    }
+];
+
+let categories = [
+    "Electronics",
+    "Furniture",
+    "Clothing",
+    "Collectibles"
+];
+
+let products = [
+    {
+        id: 1,
+        name: "Used Laptop",
+        category: "Electronics",
+        price: 18000,
+        seller: "demoSeller",
+        image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=800",
+        description: "Pre-owned laptop in good working condition."
+    },
+    {
+        id: 2,
+        name: "Wooden Study Table",
+        category: "Furniture",
+        price: 2500,
+        seller: "demoSeller",
+        image: "https://images.unsplash.com/photo-1499933374294-4584851497cc?w=800",
+        description: "Second-hand wooden study table."
+    },
+    {
+        id: 3,
+        name: "Casual Jacket",
+        category: "Clothing",
+        price: 700,
+        seller: "demoSeller",
+        image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=800",
+        description: "Gently used jacket in excellent condition."
+    },
+    {
+        id: 4,
+        name: "Collectible Camera",
+        category: "Collectibles",
+        price: 3200,
+        seller: "demoSeller",
+        image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800",
+        description: "Classic camera for collectors."
+    }
+];
+
+let favorites = [];
+let orders = [];
+let offers = [];
+let currentUser = null;
+
+function money(value) {
+    return "₹" + Number(value).toLocaleString("en-IN");
+}
+
+function refreshCategories() {
+    document.getElementById("categoryFilter").innerHTML =
+        '<option value="">All Categories</option>' +
+        categories.map(c => `<option>${c}</option>`).join("");
+
+    document.getElementById("itemCategory").innerHTML =
+        categories.map(c => `<option>${c}</option>`).join("");
+
+    renderAdmin();
+}
+
+function register() {
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value;
+    const role = document.getElementById("role").value;
+
+    if (!username || !password) {
+        alert("Enter username and password.");
+        return;
+    }
+
+    if (users.some(u => u.username === username)) {
+        alert("Username already exists.");
+        return;
+    }
+
+    if (role === "Admin") {
+        alert("Admin accounts cannot be created through public registration.");
+        return;
+    }
+
+    users.push({username, password, role});
+
+    document.getElementById("accountMessage").textContent =
+        "Registration successful. Please log in.";
+
+    renderAdmin();
+}
+
+function login() {
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value;
+
+    const user = users.find(u =>
+        u.username === username && u.password === password
+    );
+
+    if (!user) {
+        alert("Invalid username or password.");
+        return;
+    }
+
+    currentUser = user;
+    document.getElementById("accountMessage").textContent =
+        "Welcome, " + user.username + " (" + user.role + ")";
+
+    renderProducts();
+    renderMyListings();
+    renderFavorites();
+    renderOrders();
+    renderAdmin();
+}
+
+function logout() {
+    currentUser = null;
+    document.getElementById("accountMessage").textContent = "Logged out.";
+    renderMyListings();
+    renderFavorites();
+    renderOrders();
+}
+
+function renderProducts() {
+    const query = document.getElementById("search").value.toLowerCase();
+    const category = document.getElementById("categoryFilter").value;
+    const maxPrice = Number(document.getElementById("maxPrice").value);
+
+    const results = products.filter(p =>
+        p.name.toLowerCase().includes(query) &&
+        (!category || p.category === category) &&
+        (!maxPrice || p.price <= maxPrice)
+    );
+
+    document.getElementById("productList").innerHTML =
+        results.map(p => `
+            <div class="card">
+                <img src="${p.image}" alt="${p.name}"
+                     onerror="this.src='https://placehold.co/600x400?text=Used+Item'">
+                <div class="card-content">
+                    <h3>${p.name}</h3>
+                    <p>Category: ${p.category}</p>
+                    <p>${p.description}</p>
+                    <p>Seller: ${p.seller}</p>
+                    <p class="price">${money(p.price)}</p>
+                    <button onclick="buyItem(${p.id})">Buy Now</button>
+                    <button class="secondary"
+                        onclick="toggleFavorite(${p.id})">♡ Favorite</button>
+                </div>
+            </div>
+        `).join("") || "<p>No items found.</p>";
+
+    document.getElementById("negotiateItem").innerHTML =
+        products.map(p =>
+            `<option value="${p.id}">${p.name} — ${money(p.price)}</option>`
+        ).join("");
+}
+
+function addListing() {
+    if (!currentUser || currentUser.role !== "Seller") {
+        alert("Please log in as a seller to create a listing.");
+        return;
+    }
+
+    const name = document.getElementById("itemName").value.trim();
+    const category = document.getElementById("itemCategory").value;
+    const price = Number(document.getElementById("itemPrice").value);
+    const image = document.getElementById("itemImage").value.trim();
+    const description =
+        document.getElementById("itemDescription").value.trim();
+
+    if (!name || price <= 0 || !description) {
+        alert("Enter item name, valid price, and description.");
+        return;
+    }
+
+    products.push({
+        id: Date.now(),
+        name,
+        category,
+        price,
+        seller: currentUser.username,
+        image: image || "https://placehold.co/600x400?text=Used+Item",
+        description
+    });
+
+    document.getElementById("listingMessage").textContent =
+        "Your listing has been created.";
+
+    document.getElementById("itemName").value = "";
+    document.getElementById("itemPrice").value = "";
+    document.getElementById("itemImage").value = "";
+    document.getElementById("itemDescription").value = "";
+
+    renderProducts();
+    renderMyListings();
+    renderAdmin();
+}
+
+function renderMyListings() {
+    const mine = currentUser && currentUser.role === "Seller"
+        ? products.filter(p => p.seller === currentUser.username)
+        : [];
+
+    document.getElementById("myListings").innerHTML = mine.length
+        ? mine.map(p =>
+            `<p>${p.name} — ${money(p.price)}</p>`
+          ).join("")
+        : "<p>Log in as a seller to view your listings.</p>";
+}
+
+function toggleFavorite(id) {
+    if (!currentUser) {
+        alert("Please log in first.");
+        return;
+    }
+
+    const key = currentUser.username + ":" + id;
+
+    if (favorites.includes(key)) {
+        favorites = favorites.filter(f => f !== key);
+    } else {
+        favorites.push(key);
+    }
+
+    renderFavorites();
+}
+
+function renderFavorites() {
+    if (!currentUser) {
+        document.getElementById("favoritesList").innerHTML =
+            "<p>Log in to manage favorites.</p>";
+        return;
+    }
+
+    const prefix = currentUser.username + ":";
+    const ids = favorites
+        .filter(f => f.startsWith(prefix))
+        .map(f => Number(f.split(":")[1]));
+
+    const mine = products.filter(p => ids.includes(p.id));
+
+    document.getElementById("favoritesList").innerHTML = mine.length
+        ? mine.map(p => `<p>${p.name} — ${money(p.price)}</p>`).join("")
+        : "<p>No favorites saved.</p>";
+}
+
+function buyItem(id) {
+    if (!currentUser || currentUser.role === "Admin") {
+        alert("Please log in as a buyer to purchase an item.");
+        return;
+    }
+
+    const p = products.find(item => item.id === id);
+
+    if (!p) return;
+
+    if (p.seller === currentUser.username) {
+        alert("You cannot buy your own listing.");
+        return;
+    }
+
+    if (orders.some(o => o.productId === id && o.status !== "Received")) {
+        alert("This item already has an active order.");
+        return;
+    }
+
+    orders.push({
+        id: "RM" + Date.now().toString().slice(-7),
+        productId: p.id,
+        product: p.name,
+        buyer: currentUser.username,
+        seller: p.seller,
+        price: p.price,
+        status: "Shipped"
+    });
+
+    products = products.filter(item => item.id !== id);
+
+    alert("Order created successfully. Delivery status: Shipped.");
+    renderProducts();
+    renderOrders();
+    renderAdmin();
+}
+
+function makeOffer() {
+    if (!currentUser || currentUser.role !== "Buyer") {
+        alert("Log in as a buyer to negotiate prices.");
+        return;
+    }
+
+    const id = Number(document.getElementById("negotiateItem").value);
+    const price = Number(document.getElementById("offerPrice").value);
+    const p = products.find(item => item.id === id);
+
+    if (!p || price <= 0) {
+        alert("Enter a valid offer.");
+        return;
+    }
+
+    offers.push({
+        buyer: currentUser.username,
+        seller: p.seller,
+        product: p.name,
+        amount: price
+    });
+
+    document.getElementById("offersList").innerHTML +=
+        `<p>Offer sent for ${p.name}: ${money(price)}</p>`;
+
+    document.getElementById("offerPrice").value = "";
+}
+
+function renderOrders() {
+    const mine = currentUser
+        ? orders.filter(o =>
+            o.buyer === currentUser.username ||
+            o.seller === currentUser.username)
+        : [];
+
+    document.getElementById("orderList").innerHTML = mine.length
+        ? mine.map(o => `
+            <div class="card" style="padding:14px;margin:10px 0">
+                <strong>Order ID: ${o.id}</strong>
+                <p>Item: ${o.product}</p>
+                <p>Price: ${money(o.price)}</p>
+                <p>Status: ${o.status}</p>
+            </div>
+        `).join("")
+        : "<p>No orders found.</p>";
+}
+
+function addCategory() {
+    if (!currentUser || currentUser.role !== "Admin") {
+        alert("Admin login required.");
+        return;
+    }
+
+    const name = document.getElementById("newCategory").value.trim();
+
+    if (!name) {
+        alert("Enter a category name.");
+        return;
+    }
+
+    if (categories.some(c => c.toLowerCase() === name.toLowerCase())) {
+        alert("Category already exists.");
+        return;
+    }
+
+    categories.push(name);
+    document.getElementById("newCategory").value = "";
+    refreshCategories();
+}
+
+function deleteCategory(name) {
+    if (!currentUser || currentUser.role !== "Admin") {
+        alert("Admin login required.");
+        return;
+    }
+
+    if (products.some(p => p.category === name)) {
+        alert("Delete or reassign products in this category first.");
+        return;
+    }
+
+    categories = categories.filter(c => c !== name);
+    refreshCategories();
+    renderProducts();
+}
+
+function editProduct(id) {
+    if (!currentUser || currentUser.role !== "Admin") {
+        alert("Admin login required.");
+        return;
+    }
+
+    const p = products.find(item => item.id === id);
+    const price = prompt("Enter new price:", p.price);
+
+    if (price === null) return;
+
+    if (!Number.isFinite(Number(price)) || Number(price) <= 0) {
+        alert("Enter a valid price.");
+        return;
+    }
+
+    const description = prompt("Enter new description:", p.description);
+    p.price = Number(price);
+
+    if (description !== null) p.description = description;
+
+    renderProducts();
+    renderAdmin();
+}
+
+function deleteProduct(id) {
+    if (!currentUser || currentUser.role !== "Admin") {
+        alert("Admin login required.");
+        return;
+    }
+
+    products = products.filter(p => p.id !== id);
+    favorites = favorites.filter(f => !f.endsWith(":" + id));
+    renderProducts();
+    renderFavorites();
+    renderMyListings();
+    renderAdmin();
+}
+
+function deleteUser(username) {
+    if (!currentUser || currentUser.role !== "Admin") {
+        alert("Admin login required.");
+        return;
+    }
+
+    if (username === "admin") {
+        alert("The default admin account cannot be deleted.");
+        return;
+    }
+
+    users = users.filter(u => u.username !== username);
+    renderAdmin();
+}
+
+function updateOrder(id) {
+    if (!currentUser || currentUser.role !== "Admin") {
+        alert("Admin login required.");
+        return;
+    }
+
+    const order = orders.find(o => o.id === id);
+    order.status = order.status === "Shipped" ? "Received" : "Shipped";
+
+    renderOrders();
+    renderAdmin();
+}
+
+function deleteOrder(id) {
+    if (!currentUser || currentUser.role !== "Admin") {
+        alert("Admin login required.");
+        return;
+    }
+
+    orders = orders.filter(o => o.id !== id);
+    renderOrders();
+    renderAdmin();
+}
+
+function renderAdmin() {
+    const isAdmin = currentUser && currentUser.role === "Admin";
+
+    document.getElementById("categoryList").innerHTML = isAdmin
+        ? categories.map(c =>
+            `<p>${c}
+            <button class="danger" onclick="deleteCategory('${c}')">Delete</button>
+            </p>`
+          ).join("")
+        : "<p>Admin login required.</p>";
+
+    document.getElementById("userList").innerHTML = isAdmin
+        ? users.map(u =>
+            `<p>${u.username} — ${u.role}
+            <button class="danger"
+                onclick="deleteUser('${u.username}')">Delete User</button>
+            </p>`
+          ).join("")
+        : "<p>Admin login required.</p>";
+
+    document.getElementById("adminProducts").innerHTML = isAdmin
+        ? products.map(p =>
+            `<p>${p.name} — ${money(p.price)}
+            <button onclick="editProduct(${p.id})">Edit</button>
+            <button class="danger"
+                onclick="deleteProduct(${p.id})">Delete</button></p>`
+          ).join("")
+        : "<p>Admin login required.</p>";
+
+    document.getElementById("adminOrders").innerHTML = isAdmin
+        ? orders.map(o =>
+            `<p>${o.id} — ${o.product} — ${o.status}
+            <button onclick="updateOrder('${o.id}')">Change Status</button>
+            <button class="danger"
+                onclick="deleteOrder('${o.id}')">Delete Order</button></p>`
+          ).join("") || "<p>No orders yet.</p>"
+        : "<p>Admin login required.</p>";
+}
+
+refreshCategories();
+renderProducts();
+renderFavorites();
+renderMyListings();
+renderOrders();
+</script>
+
+</body>
+</html>

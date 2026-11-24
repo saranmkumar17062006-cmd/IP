@@ -1,0 +1,668 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TechSavvy - Online Gadget Store</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f1f5f9;
+    color: #222;
+}
+
+header {
+    background: #142d4e;
+    color: white;
+    padding: 22px;
+    text-align: center;
+}
+
+nav {
+    background: #087eac;
+    padding: 14px;
+    text-align: center;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin: 8px;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 22px auto;
+    padding: 22px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px #d5dce4;
+}
+
+h2 { color: #142d4e; }
+
+input, select, textarea, button {
+    width: 100%;
+    padding: 11px;
+    margin: 7px 0;
+}
+
+button {
+    background: #087eac;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover { background: #142d4e; }
+
+.products {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 16px;
+}
+
+.product {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+}
+
+.product img {
+    width: 100%;
+    height: 150px;
+    object-fit: contain;
+}
+
+.price {
+    color: #087eac;
+    font-size: 21px;
+    font-weight: bold;
+}
+
+.result {
+    background: #eaf6fb;
+    padding: 14px;
+    margin: 12px 0;
+    overflow-wrap: anywhere;
+}
+
+footer {
+    background: #142d4e;
+    color: white;
+    text-align: center;
+    padding: 18px;
+}
+
+@media(max-width: 600px) {
+    .container { margin: 12px; padding: 15px; }
+    nav a { display: inline-block; }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>💻 TechSavvy</h1>
+    <p>Your One-Stop Electronics Shopping Store</p>
+</header>
+
+<nav>
+    <a href="#register">Register</a>
+    <a href="#login">Login</a>
+    <a href="#home">Categories</a>
+    <a href="#shop">Products</a>
+    <a href="#cart">Cart</a>
+    <a href="#wishlist">Wishlist</a>
+    <a href="#orders">My Orders</a>
+    <a href="#admin">Admin</a>
+</nav>
+
+<div class="container" id="register">
+<h2>Customer Registration</h2>
+<form id="registerForm">
+    <input id="regName" placeholder="Full Name" required>
+    <input id="regEmail" type="email" placeholder="Email Address" required>
+    <input id="regPassword" type="password" placeholder="Password" required>
+    <button type="submit">Register</button>
+</form>
+<p id="registerMsg"></p>
+</div>
+
+<div class="container" id="login">
+<h2>Customer Login</h2>
+<form id="loginForm">
+    <input id="loginEmail" type="email" placeholder="Email Address" required>
+    <input id="loginPassword" type="password" placeholder="Password" required>
+    <button type="submit">Login</button>
+</form>
+<p id="loginMsg"></p>
+</div>
+
+<div class="container" id="home">
+<h2>Shop by Category</h2>
+<p>Explore our popular electronics categories.</p>
+
+<select id="categoryFilter" onchange="displayProducts()">
+    <option value="All">All Categories</option>
+    <option>Smartphones</option>
+    <option>Laptops</option>
+    <option>Tablets</option>
+    <option>Accessories</option>
+</select>
+
+<h3>Subcategories</h3>
+<p>Smartphones: Android, iPhone | Laptops: Gaming, Business |
+Tablets: Android, iPad | Accessories: Headphones, Chargers</p>
+</div>
+
+<div class="container" id="shop">
+<h2>Product Catalogue</h2>
+
+<input id="search" placeholder="Search products by name or brand"
+       oninput="displayProducts()">
+
+<label>Maximum Price (₹)</label>
+<input id="maxPrice" type="number" min="0"
+       placeholder="Enter maximum price" oninput="displayProducts()">
+
+<select id="sort" onchange="displayProducts()">
+    <option value="default">Sort by Price</option>
+    <option value="low">Price: Low to High</option>
+    <option value="high">Price: High to Low</option>
+</select>
+
+<div class="products" id="productList"></div>
+</div>
+
+<div class="container" id="cart">
+<h2>Shopping Cart</h2>
+<div id="cartList">Your cart is empty.</div>
+<p id="cartTotal"></p>
+<button onclick="checkout()">Checkout</button>
+</div>
+
+<div class="container" id="wishlist">
+<h2>My Wishlist</h2>
+<div id="wishlistList">Your wishlist is empty.</div>
+</div>
+
+<div class="container" id="orders">
+<h2>Order Status and History</h2>
+<input id="orderSearch" placeholder="Enter Order ID">
+<button onclick="trackOrder()">Track Order</button>
+<div id="orderStatus"></div>
+<h3>My Order History</h3>
+<div id="orderHistory"></div>
+</div>
+
+<div class="container" id="admin">
+<h2>Administrator Login</h2>
+<form id="adminForm">
+    <input id="adminUser" placeholder="Admin Username" required>
+    <input id="adminPass" type="password" placeholder="Admin Password" required>
+    <button type="submit">Login as Admin</button>
+</form>
+
+<div id="adminPanel" hidden>
+    <h2>Admin Dashboard</h2>
+    <p id="adminReport"></p>
+
+    <h3>Add / Update Product</h3>
+    <input id="productId" type="number" placeholder="Product ID for update (optional)">
+    <input id="newName" placeholder="Product Name">
+    <input id="newBrand" placeholder="Brand">
+    <select id="newCategory">
+        <option>Smartphones</option>
+        <option>Laptops</option>
+        <option>Tablets</option>
+        <option>Accessories</option>
+    </select>
+    <input id="newSubcategory" placeholder="Subcategory">
+    <input id="newPrice" type="number" min="1" placeholder="Price (₹)">
+    <input id="newStock" type="number" min="0" placeholder="Stock Quantity">
+    <input id="newImage" type="url" placeholder="Product Image URL (optional)">
+    <textarea id="newDescription" placeholder="Product Description"></textarea>
+    <button onclick="saveProduct()">Save Product</button>
+
+    <h3>Manage Orders</h3>
+    <div id="adminOrders"></div>
+
+    <h3>Customer Checkout Information</h3>
+    <div id="customerList"></div>
+
+    <button onclick="adminLogout()">Logout</button>
+</div>
+</div>
+
+<footer>
+    <p>TechSavvy | Online Electronics Shopping System</p>
+</footer>
+
+<script>
+let products = [
+    {id:1, name:"Samsung Galaxy Phone", brand:"Samsung",
+     category:"Smartphones", subcategory:"Android", price:25000,
+     stock:10, description:"Smartphone with a high-quality display.",
+     image:"https://placehold.co/300x200?text=Samsung+Phone"},
+
+    {id:2, name:"iPhone", brand:"Apple",
+     category:"Smartphones", subcategory:"iPhone", price:55000,
+     stock:8, description:"Premium smartphone with advanced features.",
+     image:"https://placehold.co/300x200?text=iPhone"},
+
+    {id:3, name:"Gaming Laptop", brand:"HP",
+     category:"Laptops", subcategory:"Gaming", price:65000,
+     stock:5, description:"Powerful laptop for gaming and development.",
+     image:"https://placehold.co/300x200?text=Gaming+Laptop"},
+
+    {id:4, name:"Android Tablet", brand:"Lenovo",
+     category:"Tablets", subcategory:"Android", price:18000,
+     stock:12, description:"Portable tablet for work and entertainment.",
+     image:"https://placehold.co/300x200?text=Tablet"},
+
+    {id:5, name:"Wireless Headphones", brand:"Sony",
+     category:"Accessories", subcategory:"Headphones", price:3000,
+     stock:20, description:"Wireless headphones with clear sound.",
+     image:"https://placehold.co/300x200?text=Headphones"},
+
+    {id:6, name:"Fast Charger", brand:"Anker",
+     category:"Accessories", subcategory:"Chargers", price:1200,
+     stock:25, description:"Compact fast charger for compatible devices.",
+     image:"https://placehold.co/300x200?text=Charger"}
+];
+
+let users = [];
+let cart = [];
+let wishlist = [];
+let orders = [];
+let loggedInUser = null;
+let adminLoggedIn = false;
+let nextProductId = 7;
+let nextOrderId = 1001;
+
+function displayProducts() {
+    const query = document.getElementById("search").value.toLowerCase();
+    const category = document.getElementById("categoryFilter").value;
+    const max = Number(document.getElementById("maxPrice").value) || Infinity;
+    const sort = document.getElementById("sort").value;
+
+    let filtered = products.filter(p =>
+        (p.name.toLowerCase().includes(query) ||
+         p.brand.toLowerCase().includes(query) ||
+         p.subcategory.toLowerCase().includes(query)) &&
+        (category === "All" || p.category === category) &&
+        p.price <= max
+    );
+
+    if (sort === "low") filtered.sort((a,b) => a.price-b.price);
+    if (sort === "high") filtered.sort((a,b) => b.price-a.price);
+
+    const list = document.getElementById("productList");
+
+    if (!filtered.length) {
+        list.textContent = "No products found.";
+        return;
+    }
+
+    list.innerHTML = filtered.map(p => `
+        <div class="product">
+            <img src="${p.image}" alt="${p.name}"
+                 onerror="this.style.display='none'">
+            <h3>${p.name}</h3>
+            <p>Brand: ${p.brand}</p>
+            <p>Category: ${p.category}</p>
+            <p>${p.description}</p>
+            <p>Availability: ${p.stock > 0 ? "In Stock ("+p.stock+")" : "Out of Stock"}</p>
+            <p class="price">₹${p.price}</p>
+            <button onclick="addToCart(${p.id})"
+                    ${p.stock < 1 ? "disabled" : ""}>Add to Cart</button>
+            <button onclick="addToWishlist(${p.id})">Add to Wishlist</button>
+        </div>
+    `).join("");
+}
+
+function addToCart(id) {
+    if (!loggedInUser) {
+        alert("Please log in before shopping.");
+        return;
+    }
+
+    const p = products.find(x => x.id === id);
+    const item = cart.find(x => x.id === id);
+
+    if (!p || p.stock < 1) {
+        alert("Product is out of stock.");
+        return;
+    }
+
+    if (item) {
+        if (item.quantity >= p.stock) {
+            alert("Not enough stock available.");
+            return;
+        }
+        item.quantity++;
+    } else {
+        cart.push({...p, quantity:1});
+    }
+
+    displayCart();
+}
+
+function displayCart() {
+    const list = document.getElementById("cartList");
+
+    if (!cart.length) {
+        list.textContent = "Your cart is empty.";
+        document.getElementById("cartTotal").textContent = "";
+        return;
+    }
+
+    list.innerHTML = cart.map(p => `
+        <div class="result">
+            <b>${p.name}</b> - ₹${p.price} × ${p.quantity}
+            <button onclick="changeQuantity(${p.id},1)">+</button>
+            <button onclick="changeQuantity(${p.id},-1)">-</button>
+            <button onclick="removeFromCart(${p.id})">Remove</button>
+        </div>
+    `).join("");
+
+    document.getElementById("cartTotal").textContent =
+        "Total: ₹" + cart.reduce((sum,p) => sum+p.price*p.quantity,0);
+}
+
+function changeQuantity(id, amount) {
+    const item = cart.find(p => p.id === id);
+    const product = products.find(p => p.id === id);
+
+    if (!item || !product) return;
+
+    const next = item.quantity + amount;
+
+    if (next > product.stock) {
+        alert("Maximum available stock reached.");
+        return;
+    }
+
+    if (next <= 0) removeFromCart(id);
+    else {
+        item.quantity = next;
+        displayCart();
+    }
+}
+
+function removeFromCart(id) {
+    cart = cart.filter(p => p.id !== id);
+    displayCart();
+}
+
+function addToWishlist(id) {
+    if (!loggedInUser) {
+        alert("Please log in first.");
+        return;
+    }
+
+    if (!wishlist.includes(id)) wishlist.push(id);
+    displayWishlist();
+}
+
+function displayWishlist() {
+    const items = products.filter(p => wishlist.includes(p.id));
+    const list = document.getElementById("wishlistList");
+
+    list.innerHTML = items.length ? items.map(p => `
+        <div class="result">
+            ${p.name} - ₹${p.price}
+            <button onclick="addToCart(${p.id})">Add to Cart</button>
+            <button onclick="removeWishlist(${p.id})">Remove</button>
+        </div>
+    `).join("") : "Your wishlist is empty.";
+}
+
+function removeWishlist(id) {
+    wishlist = wishlist.filter(x => x !== id);
+    displayWishlist();
+}
+
+document.getElementById("registerForm").onsubmit = function(e) {
+    e.preventDefault();
+
+    const email = document.getElementById("regEmail").value.trim().toLowerCase();
+
+    if (users.some(u => u.email === email)) {
+        document.getElementById("registerMsg").textContent =
+            "Email already registered.";
+        return;
+    }
+
+    users.push({
+        name: document.getElementById("regName").value.trim(),
+        email,
+        password: document.getElementById("regPassword").value
+    });
+
+    document.getElementById("registerMsg").textContent =
+        "Registration successful. Please log in.";
+    this.reset();
+};
+
+document.getElementById("loginForm").onsubmit = function(e) {
+    e.preventDefault();
+
+    const email = document.getElementById("loginEmail").value.trim().toLowerCase();
+    const password = document.getElementById("loginPassword").value;
+
+    loggedInUser = users.find(u => u.email === email && u.password === password) || null;
+
+    document.getElementById("loginMsg").textContent = loggedInUser
+        ? "Welcome " + loggedInUser.name + "! Login successful."
+        : "Invalid credentials. Please register first.";
+
+    if (loggedInUser) displayOrders();
+};
+
+function checkout() {
+    if (!loggedInUser) {
+        alert("Please log in before checkout.");
+        return;
+    }
+
+    if (!cart.length) {
+        alert("Your cart is empty.");
+        return;
+    }
+
+    if (cart.some(item => {
+        const p = products.find(x => x.id === item.id);
+        return !p || item.quantity > p.stock;
+    })) {
+        alert("Stock has changed. Please review your cart.");
+        return;
+    }
+
+    const order = {
+        id: "TS" + nextOrderId++,
+        customer: loggedInUser.name,
+        email: loggedInUser.email,
+        items: cart.map(p => ({id:p.id, name:p.name, price:p.price, quantity:p.quantity})),
+        total: cart.reduce((sum,p) => sum+p.price*p.quantity,0),
+        status: "Order Placed"
+    };
+
+    order.items.forEach(item => {
+        products.find(p => p.id === item.id).stock -= item.quantity;
+    });
+
+    orders.push(order);
+    cart = [];
+    displayCart();
+    displayProducts();
+    displayOrders();
+
+    alert("Order placed successfully! Order ID: " + order.id +
+          "\nDemo checkout only. No payment was processed.");
+
+    updateAdmin();
+}
+
+function trackOrder() {
+    const id = document.getElementById("orderSearch").value.trim();
+    const order = orders.find(o =>
+        o.id === id && (adminLoggedIn ||
+        (loggedInUser && o.email === loggedInUser.email))
+    );
+
+    document.getElementById("orderStatus").textContent = order
+        ? "Order " + order.id + " - Status: " + order.status
+        : "Order not found. Log in to view your own orders.";
+}
+
+function displayOrders() {
+    const mine = orders.filter(o => loggedInUser && o.email === loggedInUser.email);
+    const list = document.getElementById("orderHistory");
+
+    list.innerHTML = mine.length ? mine.map(o => `
+        <div class="result">
+            <b>Order ID: ${o.id}</b>
+            <p>Products: ${o.items.map(i => i.name+" × "+i.quantity).join(", ")}</p>
+            <p>Total: ₹${o.total}</p>
+            <p>Status: ${o.status}</p>
+        </div>
+    `).join("") : "No orders found.";
+}
+
+// Demo admin credentials: admin / admin123
+document.getElementById("adminForm").onsubmit = function(e) {
+    e.preventDefault();
+
+    if (document.getElementById("adminUser").value === "admin" &&
+        document.getElementById("adminPass").value === "admin123") {
+        adminLoggedIn = true;
+        document.getElementById("adminPanel").hidden = false;
+        updateAdmin();
+    } else {
+        alert("Invalid admin credentials.");
+    }
+};
+
+function saveProduct() {
+    if (!adminLoggedIn) return;
+
+    const id = Number(document.getElementById("productId").value);
+    const name = document.getElementById("newName").value.trim();
+    const brand = document.getElementById("newBrand").value.trim();
+    const category = document.getElementById("newCategory").value;
+    const subcategory = document.getElementById("newSubcategory").value.trim();
+    const price = Number(document.getElementById("newPrice").value);
+    const stock = Number(document.getElementById("newStock").value);
+    const image = document.getElementById("newImage").value.trim();
+    const description = document.getElementById("newDescription").value.trim();
+
+    if (!name || !brand || !subcategory || !description ||
+        !Number.isFinite(price) || price <= 0 ||
+        !Number.isInteger(stock) || stock < 0) {
+        alert("Enter valid product details.");
+        return;
+    }
+
+    if (id) {
+        const p = products.find(x => x.id === id);
+        if (!p) {
+            alert("Product ID not found.");
+            return;
+        }
+        Object.assign(p, {name, brand, category, subcategory, price, stock, description});
+        if (image) p.image = image;
+    } else {
+        products.push({
+            id: nextProductId++, name, brand, category, subcategory,
+            price, stock, description,
+            image: image || "https://placehold.co/300x200?text=Product"
+        });
+    }
+
+    displayProducts();
+    updateAdmin();
+    alert("Product saved successfully.");
+}
+
+function deleteProduct(id) {
+    if (!adminLoggedIn) return;
+
+    products = products.filter(p => p.id !== id);
+    cart = cart.filter(p => p.id !== id);
+    wishlist = wishlist.filter(x => x !== id);
+
+    displayProducts();
+    displayCart();
+    displayWishlist();
+    updateAdmin();
+}
+
+function updateAdmin() {
+    if (!adminLoggedIn) return;
+
+    document.getElementById("adminReport").textContent =
+        "Products: " + products.length +
+        " | Customers: " + users.length +
+        " | Orders: " + orders.length;
+
+    document.getElementById("adminOrders").innerHTML = orders.map(o => `
+        <div class="result">
+            <b>${o.id}</b> - ${o.customer} (${o.email})
+            <p>Total: ₹${o.total} | Status: ${o.status}</p>
+            <select id="status-${o.id}">
+                <option>Order Placed</option>
+                <option>Packed</option>
+                <option>Shipped</option>
+                <option>Delivered</option>
+                <option>Cancelled</option>
+            </select>
+            <button onclick="updateOrderStatus('${o.id}')">Update Status</button>
+        </div>
+    `).join("") || "No orders yet.";
+
+    orders.forEach(o => {
+        document.getElementById("status-" + o.id).value = o.status;
+    });
+
+    document.getElementById("customerList").innerHTML = users.map(u => `
+        <div class="result">${u.name} - ${u.email}</div>
+    `).join("") || "No customers registered.";
+
+    document.getElementById("productList").innerHTML =
+        document.getElementById("productList").innerHTML;
+}
+
+function updateOrderStatus(id) {
+    if (!adminLoggedIn) return;
+
+    const order = orders.find(o => o.id === id);
+    if (!order) return;
+
+    order.status = document.getElementById("status-" + id).value;
+    displayOrders();
+    updateAdmin();
+}
+
+function adminLogout() {
+    adminLoggedIn = false;
+    document.getElementById("adminPanel").hidden = true;
+    document.getElementById("adminForm").reset();
+}
+
+displayProducts();
+displayCart();
+displayWishlist();
+</script>
+
+</body>
+</html>

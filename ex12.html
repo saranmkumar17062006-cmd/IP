@@ -1,0 +1,640 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InsureEasy - Insurance Management</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+body {
+    margin: 0;
+    background: #f1f5f9;
+    color: #243247;
+}
+header {
+    background: #123b5d;
+    color: white;
+    padding: 20px 7%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+header h1 span {
+    color: #5ee0b5;
+}
+nav a {
+    color: white;
+    text-decoration: none;
+    margin: 8px;
+}
+.hero {
+    background: linear-gradient(120deg, #123b5d, #087f69);
+    color: white;
+    text-align: center;
+    padding: 45px 15px;
+}
+.container {
+    padding: 30px 7%;
+}
+.panel {
+    background: white;
+    padding: 22px;
+    border-radius: 10px;
+    margin-bottom: 22px;
+    box-shadow: 0 3px 12px #00000010;
+}
+input, select, textarea, button {
+    padding: 11px;
+    margin: 5px 3px;
+    border: 1px solid #ccd5df;
+    border-radius: 5px;
+    font-size: 14px;
+}
+button {
+    background: #087f69;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+button:hover {
+    background: #065b4c;
+}
+.secondary {
+    background: #123b5d;
+}
+.danger {
+    background: #c0392b;
+}
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 18px;
+}
+.card {
+    background: white;
+    padding: 18px;
+    border-radius: 10px;
+    box-shadow: 0 3px 12px #00000010;
+}
+.price {
+    font-size: 22px;
+    color: #087f69;
+    font-weight: bold;
+}
+.hidden {
+    display: none;
+}
+.message {
+    color: #087f69;
+    font-weight: bold;
+}
+footer {
+    background: #123b5d;
+    color: white;
+    text-align: center;
+    padding: 20px;
+}
+@media(max-width:600px) {
+    header { justify-content: center; }
+    nav { text-align: center; }
+}
+</style>
+</head>
+
+<body>
+<header>
+    <h1>🛡️ Insure<span>Easy</span></h1>
+    <nav>
+        <a href="#home">Home</a>
+        <a href="#policies">Policies</a>
+        <a href="#account">Login</a>
+        <a href="#dashboard">Dashboard</a>
+        <a href="#admin">Admin</a>
+    </nav>
+</header>
+
+<section class="hero" id="home">
+    <h2>Insurance Made Simple</h2>
+    <p>Compare policies, manage premiums, and stay protected.</p>
+    <button onclick="showSection('policies')">Explore Policies</button>
+</section>
+
+<main class="container">
+
+<section class="panel" id="account">
+    <h2>Register / Login</h2>
+    <input id="username" placeholder="Username">
+    <input id="password" type="password" placeholder="Password">
+
+    <select id="role">
+        <option value="Customer">Customer</option>
+        <option value="Agent">Agent</option>
+        <option value="Admin">Admin</option>
+    </select>
+
+    <button onclick="register()">Register</button>
+    <button onclick="login()">Login</button>
+    <button class="secondary" onclick="logout()">Logout</button>
+    <p id="accountMessage" class="message"></p>
+    <p>Demo Admin: admin / admin123</p>
+</section>
+
+<section id="policies" class="panel">
+    <h2>Insurance Policies</h2>
+    <input id="policySearch" placeholder="Search policies">
+    <select id="policyType">
+        <option value="">All Types</option>
+        <option value="Health">Health</option>
+        <option value="Auto">Auto</option>
+        <option value="Home">Home</option>
+    </select>
+    <button onclick="renderPolicies()">Search</button>
+    <div id="policyList" class="grid"></div>
+</section>
+
+<section class="panel" id="dashboard">
+    <h2>User Dashboard</h2>
+    <p id="welcome">Please log in to manage your insurance.</p>
+
+    <h3>My Policies</h3>
+    <div id="myPolicies"></div>
+
+    <h3>Premium Payment</h3>
+    <select id="paymentPolicy"></select>
+    <button onclick="payPremium()">Pay Premium (Demo)</button>
+    <p id="paymentMessage" class="message"></p>
+
+    <h3>File an Insurance Claim</h3>
+    <select id="claimPolicy"></select>
+    <textarea id="claimDetails" placeholder="Describe your claim"></textarea>
+    <button onclick="fileClaim()">Submit Claim</button>
+    <p id="claimMessage" class="message"></p>
+
+    <h3>Renewal Reminders</h3>
+    <div id="reminders"></div>
+</section>
+
+<section class="panel">
+    <h2>Agent Module</h2>
+    <p>Agents can register, add customers, manage policy assignments, and send demo reminders.</p>
+
+    <input id="customerName" placeholder="Customer name">
+    <input id="customerPhone" placeholder="Customer phone number">
+    <button onclick="createCustomer()">Create Customer</button>
+
+    <h3>Customer Records</h3>
+    <div id="customerList"></div>
+
+    <h3>Send Renewal Alert</h3>
+    <select id="alertCustomer"></select>
+    <button onclick="sendAlert()">Send Demo Alert</button>
+    <p id="alertMessage" class="message"></p>
+</section>
+
+<section class="panel" id="admin">
+    <h2>Admin Dashboard</h2>
+    <p>Admin can approve agent registrations and view agents and customers.</p>
+
+    <h3>Pending Agent Approvals</h3>
+    <div id="pendingAgents"></div>
+
+    <h3>All Agents</h3>
+    <div id="agentList"></div>
+
+    <h3>All Customers</h3>
+    <div id="adminCustomers"></div>
+
+    <h3>Add New Policy</h3>
+    <input id="newPolicyName" placeholder="Policy name">
+    <select id="newPolicyType">
+        <option value="Health">Health</option>
+        <option value="Auto">Auto</option>
+        <option value="Home">Home</option>
+    </select>
+    <input id="newPolicyPrice" type="number" placeholder="Annual premium (₹)">
+    <input id="newPolicyCoverage" placeholder="Coverage details">
+    <button onclick="addPolicy()">Add Policy</button>
+    <p id="adminMessage" class="message"></p>
+
+    <h3>Claims</h3>
+    <div id="claimList"></div>
+</section>
+
+</main>
+
+<footer>
+    <p>© 2026 InsureEasy | Insurance Management System</p>
+</footer>
+
+<script>
+let users = [
+    {username: "admin", password: "admin123", role: "Admin",
+     approved: true}
+];
+
+let policies = [
+    {id: 1, name: "Health Secure", type: "Health",
+     price: 12000, coverage: "Medical expenses and hospital care"},
+    {id: 2, name: "Auto Protect", type: "Auto",
+     price: 8500, coverage: "Vehicle accident and damage protection"},
+    {id: 3, name: "Home Shield", type: "Home",
+     price: 6000, coverage: "Home structure and property protection"}
+];
+
+let customers = [];
+let assignedPolicies = [];
+let payments = [];
+let claims = [];
+let reminders = [];
+let currentUser = null;
+
+function money(value) {
+    return "₹" + Number(value).toLocaleString("en-IN");
+}
+
+function register() {
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value;
+    const role = document.getElementById("role").value;
+
+    if (!username || !password) {
+        alert("Enter username and password.");
+        return;
+    }
+
+    if (users.some(u => u.username === username)) {
+        alert("Username already exists.");
+        return;
+    }
+
+    users.push({
+        username,
+        password,
+        role,
+        approved: role !== "Agent"
+    });
+
+    document.getElementById("accountMessage").textContent =
+        role === "Agent"
+        ? "Agent registered. Waiting for admin approval."
+        : "Registration successful. Please log in.";
+
+    renderAdmin();
+}
+
+function login() {
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value;
+
+    const user = users.find(u =>
+        u.username === username && u.password === password
+    );
+
+    if (!user) {
+        alert("Invalid username or password.");
+        return;
+    }
+
+    if (user.role === "Agent" && !user.approved) {
+        alert("Your agent account is waiting for admin approval.");
+        return;
+    }
+
+    currentUser = user;
+
+    document.getElementById("accountMessage").textContent =
+        "Logged in as " + user.role + ".";
+    document.getElementById("welcome").textContent =
+        "Welcome, " + user.username + " (" + user.role + ")";
+
+    renderPolicies();
+    renderDashboard();
+    renderAdmin();
+}
+
+function logout() {
+    currentUser = null;
+    document.getElementById("accountMessage").textContent =
+        "You have logged out.";
+    document.getElementById("welcome").textContent =
+        "Please log in to manage your insurance.";
+    renderDashboard();
+}
+
+function showSection(id) {
+    document.getElementById(id).scrollIntoView({
+        behavior: "smooth"
+    });
+}
+
+function renderPolicies() {
+    const search = document.getElementById("policySearch")
+        .value.toLowerCase();
+    const type = document.getElementById("policyType").value;
+
+    const results = policies.filter(p =>
+        p.name.toLowerCase().includes(search) &&
+        (!type || p.type === type)
+    );
+
+    document.getElementById("policyList").innerHTML =
+        results.map(p => `
+            <div class="card">
+                <h3>${p.name}</h3>
+                <p>Type: ${p.type}</p>
+                <p>${p.coverage}</p>
+                <p class="price">${money(p.price)}/year</p>
+                <button onclick="comparePolicy(${p.id})">Compare</button>
+                <button onclick="buyPolicy(${p.id})">Apply</button>
+            </div>
+        `).join("") || "<p>No policies found.</p>";
+}
+
+function comparePolicy(id) {
+    const p = policies.find(item => item.id === id);
+    alert("Policy Comparison\n\n" + p.name +
+          "\nType: " + p.type +
+          "\nAnnual Premium: " + money(p.price) +
+          "\nCoverage: " + p.coverage);
+}
+
+function buyPolicy(id) {
+    if (!currentUser || currentUser.role !== "Customer") {
+        alert("Please log in as a customer to apply for a policy.");
+        return;
+    }
+
+    if (assignedPolicies.some(a =>
+        a.username === currentUser.username && a.policyId === id
+    )) {
+        alert("You already have this policy.");
+        return;
+    }
+
+    assignedPolicies.push({
+        username: currentUser.username,
+        policyId: id,
+        status: "Active",
+        renewalDate: "2027-12-31"
+    });
+
+    alert("Policy application successful (demo).");
+    renderDashboard();
+}
+
+function renderDashboard() {
+    const mine = currentUser && currentUser.role === "Customer"
+        ? assignedPolicies.filter(a =>
+            a.username === currentUser.username)
+        : [];
+
+    document.getElementById("myPolicies").innerHTML = mine.length
+        ? mine.map(a => {
+            const p = policies.find(item => item.id === a.policyId);
+            return `<div class="card">
+                <h3>${p.name}</h3>
+                <p>Premium: ${money(p.price)}</p>
+                <p>Status: ${a.status}</p>
+                <p>Renewal date: ${a.renewalDate}</p>
+            </div>`;
+        }).join("")
+        : "<p>No policies available.</p>";
+
+    const options = mine.map(a => {
+        const p = policies.find(item => item.id === a.policyId);
+        return `<option value="${p.id}">${p.name}</option>`;
+    }).join("");
+
+    document.getElementById("paymentPolicy").innerHTML = options;
+    document.getElementById("claimPolicy").innerHTML = options;
+
+    const myReminders = currentUser
+        ? reminders.filter(r => r.username === currentUser.username)
+        : [];
+
+    document.getElementById("reminders").innerHTML = myReminders.length
+        ? myReminders.map(r => `<p>${r.message}</p>`).join("")
+        : "<p>No reminders yet.</p>";
+}
+
+function payPremium() {
+    if (!currentUser || currentUser.role !== "Customer") {
+        alert("Log in as a customer first.");
+        return;
+    }
+
+    const id = Number(document.getElementById("paymentPolicy").value);
+    const assigned = assignedPolicies.find(a =>
+        a.username === currentUser.username && a.policyId === id
+    );
+
+    if (!assigned) {
+        alert("Apply for a policy before paying.");
+        return;
+    }
+
+    const p = policies.find(item => item.id === id);
+    payments.push({
+        username: currentUser.username,
+        policy: p.name,
+        amount: p.price
+    });
+
+    document.getElementById("paymentMessage").textContent =
+        "Demo payment recorded: " + money(p.price) + ".";
+}
+
+function fileClaim() {
+    if (!currentUser || currentUser.role !== "Customer") {
+        alert("Log in as a customer first.");
+        return;
+    }
+
+    const id = Number(document.getElementById("claimPolicy").value);
+    const details = document.getElementById("claimDetails").value.trim();
+
+    const assigned = assignedPolicies.find(a =>
+        a.username === currentUser.username && a.policyId === id
+    );
+
+    if (!assigned || !details) {
+        alert("Select your policy and enter claim details.");
+        return;
+    }
+
+    const p = policies.find(item => item.id === id);
+
+    claims.push({
+        username: currentUser.username,
+        policy: p.name,
+        details,
+        status: "Submitted"
+    });
+
+    document.getElementById("claimDetails").value = "";
+    document.getElementById("claimMessage").textContent =
+        "Claim submitted successfully (demo).";
+    renderAdmin();
+}
+
+function createCustomer() {
+    if (!currentUser ||
+        !["Agent", "Admin"].includes(currentUser.role)) {
+        alert("Please log in as an approved agent or admin.");
+        return;
+    }
+
+    const name = document.getElementById("customerName").value.trim();
+    const phone = document.getElementById("customerPhone").value.trim();
+
+    if (!name || !phone) {
+        alert("Enter customer name and phone number.");
+        return;
+    }
+
+    customers.push({
+        name,
+        phone,
+        agent: currentUser.username
+    });
+
+    document.getElementById("customerName").value = "";
+    document.getElementById("customerPhone").value = "";
+    renderAdmin();
+    alert("Customer created successfully.");
+}
+
+function sendAlert() {
+    if (!currentUser ||
+        !["Agent", "Admin"].includes(currentUser.role)) {
+        alert("Only agents and admins can send demo alerts.");
+        return;
+    }
+
+    const index = Number(document.getElementById("alertCustomer").value);
+    const customer = customers[index];
+
+    if (!customer) {
+        alert("Please create a customer first.");
+        return;
+    }
+
+    const message = "Reminder: Please check your upcoming insurance renewal.";
+    reminders.push({
+        username: customer.name,
+        message
+    });
+
+    document.getElementById("alertMessage").textContent =
+        "Demo reminder created for " + customer.name +
+        ". No SMS was sent.";
+
+    renderDashboard();
+}
+
+function addPolicy() {
+    if (!currentUser || currentUser.role !== "Admin") {
+        alert("Only admin can add policies.");
+        return;
+    }
+
+    const name = document.getElementById("newPolicyName").value.trim();
+    const type = document.getElementById("newPolicyType").value;
+    const price = Number(document.getElementById("newPolicyPrice").value);
+    const coverage =
+        document.getElementById("newPolicyCoverage").value.trim();
+
+    if (!name || price <= 0 || !coverage) {
+        alert("Enter valid policy details.");
+        return;
+    }
+
+    policies.push({
+        id: Date.now(),
+        name,
+        type,
+        price,
+        coverage
+    });
+
+    document.getElementById("newPolicyName").value = "";
+    document.getElementById("newPolicyPrice").value = "";
+    document.getElementById("newPolicyCoverage").value = "";
+
+    document.getElementById("adminMessage").textContent =
+        "New policy added.";
+    renderPolicies();
+    renderAdmin();
+}
+
+function approveAgent(username) {
+    if (!currentUser || currentUser.role !== "Admin") {
+        alert("Admin login required.");
+        return;
+    }
+
+    const agent = users.find(u =>
+        u.username === username && u.role === "Agent"
+    );
+
+    if (agent) agent.approved = true;
+    renderAdmin();
+}
+
+function renderAdmin() {
+    const admin = currentUser && currentUser.role === "Admin";
+
+    const pending = users.filter(u =>
+        u.role === "Agent" && !u.approved
+    );
+
+    document.getElementById("pendingAgents").innerHTML = admin
+        ? pending.map(a =>
+            `<p>${a.username}
+            <button onclick="approveAgent('${a.username}')">Approve</button>
+            </p>`
+          ).join("") || "<p>No pending agents.</p>"
+        : "<p>Log in as admin to view agent approvals.</p>";
+
+    document.getElementById("agentList").innerHTML = admin
+        ? users.filter(u => u.role === "Agent")
+            .map(a => `<p>${a.username} — ${
+                a.approved ? "Approved" : "Pending"
+            }</p>`).join("") || "<p>No agents registered.</p>"
+        : "<p>Admin access required.</p>";
+
+    document.getElementById("adminCustomers").innerHTML = admin
+        ? customers.map(c =>
+            `<p>${c.name} — ${c.phone} — Agent: ${c.agent}</p>`
+          ).join("") || "<p>No customers yet.</p>"
+        : "<p>Admin access required.</p>";
+
+    document.getElementById("customerList").innerHTML =
+        customers.map((c, i) =>
+            `<p>${c.name} — ${c.phone} — Agent: ${c.agent}</p>`
+        ).join("") || "<p>No customers created.</p>";
+
+    document.getElementById("alertCustomer").innerHTML =
+        customers.map((c, i) =>
+            `<option value="${i}">${c.name}</option>`
+        ).join("");
+
+    document.getElementById("claimList").innerHTML = admin
+        ? claims.map(c =>
+            `<p>${c.username} — ${c.policy} — ${c.details} — ${c.status}</p>`
+          ).join("") || "<p>No claims submitted.</p>"
+        : "<p>Admin access required.</p>";
+}
+
+renderPolicies();
+renderDashboard();
+renderAdmin();
+</script>
+</body>
+</html>

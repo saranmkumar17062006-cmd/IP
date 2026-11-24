@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TransitGo | Online Bus Ticket Booking & Management System</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-full flex flex-col justify-between">
+
+    <!-- Global Notification Banner -->
+    <div id="toast" class="fixed top-5 right-5 z-50 hidden transition-all duration-300 transform translate-y-0 px-6 py-4 rounded-xl shadow-2xl text-white font-medium flex items-center space-x-3">
+        <i id="toast-icon" class="fa-solid fa-circle-check text-xl"></i>
+        <span id="toast-message">Notification message</span>
+    </div>
+
+    <div>
+        <!-- Navigation Header -->
+        <header class="bg-indigo-900 text-white shadow-md sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-20 items-center">
+                    <!-- Brand Logo -->
+                    <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('home')">
+                        <div class="bg-amber-500 p-2.5 rounded-xl text-white shadow-lg">
+                            <i class="fa-solid fa-bus text-2xl"></i>
+                        </div>
+                        <div>
+                            <span class="text-xl font-bold tracking-tight">TransitGo</span>
+                            <span class="block text-xs text-amber-400 font-medium tracking-widest uppercase">Express Bus Lines</span>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Links -->
+                    <nav class="hidden md:flex space-x-1 lg:space-x-4 items-center">
+                        <button onclick="switchTab('home')" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium transition hover:bg-indigo-800 text-amber-400" data-target="home">Find Buses</button>
+                        <button onclick="switchTab('history')" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium transition hover:bg-indigo-800 text-slate-300 auth-required hidden" data-target="history">My Bookings</button>
+                        <button onclick="switchTab('news')" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium transition hover:bg-indigo-800 text-slate-300" data-target="news">Travel News</button>
+                        <button onclick="switchTab('admin')" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium transition hover:bg-indigo-800 text-purple-300 font-semibold border border-purple-400/30" data-target="admin"><i class="fa-solid fa-shield-halved mr-1"></i> Admin Portal</button>
+                    </nav>
+
+                    <!-- User Account Action Area -->
+                    <div class="flex items-center space-x-3">
+                        <div id="user-guest-actions" class="flex items-center space-x-2">
+                            <button onclick="openModal('loginModal')" class="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition">Login</button>
+                            <button onclick="openModal('registerModal')" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-sm font-medium shadow-md transition">Register</button>
+                        </div>
+                        <div id="user-logged-actions" class="hidden flex items-center space-x-3">
+                            <button onclick="switchTab('profile')" class="flex items-center space-x-2 bg-indigo-800 hover:bg-indigo-700 px-3 py-1.5 rounded-xl border border-indigo-700 transition">
+                                <div class="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center font-bold text-white text-sm" id="user-avatar-initials">U</div>
+                                <span id="user-display-name" class="text-sm font-medium text-slate-200 hidden sm:inline">User Name</span>
+                            </button>
+                            <button onclick="logoutUser()" title="Logout" class="p-2 text-slate-400 hover:text-rose-400 transition"><i class="fa-solid fa-right-from-bracket text-lg"></i></button>
+                        </div>
+                        <!-- Mobile Menu Button -->
+                        <button onclick="toggleMobileMenu()" class="md:hidden p-2 text-slate-300 hover:text-white"><i class="fa-solid fa-bars text-xl"></i></button>
+                    </div>
+                </div>
+            </div>
+            <!-- Mobile Menu Dropdown -->
+            <div id="mobile-menu" class="hidden md:hidden bg-indigo-800 px-4 pt-2 pb-4 space-y-2 border-t border-indigo-700">
+                <button onclick="switchTab('home'); toggleMobileMenu();" class="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-200 hover:bg-indigo-700">Find Buses</button>
+                <button onclick="switchTab('history'); toggleMobileMenu();" class="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-200 hover:bg-indigo-700 auth-required hidden">My Bookings</button>
+                <button onclick="switchTab('news'); toggleMobileMenu();" class="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-200 hover:bg-indigo-700">Travel News</button>
+                <button onclick="switchTab('admin'); toggleMobileMenu();" class="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-purple-300 hover:bg-indigo-700">Admin Portal</button>
+            </div>
+        </header>
+
+        <!-- Main Content Wrapper -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-grow">
+
+            <!-- TAB 1: HOME & SEARCH BUSES -->
+            <div id="tab-home" class="tab-content active space-y-12">
+                <!-- Hero Section with Search Widget -->
+                <div class="relative rounded-3xl overflow-hidden bg-indigo-950 text-white shadow-2xl p-8 md:p-16 flex flex-col justify-center min-h-[460px]">
+                    <div class="absolute inset-0 opacity-30 bg-cover bg-center mix-blend-overlay" style="background-image: url('https://placehold.co/1600x900/1e1b4b/e2e8f0?text=Modern+Express+Buses');"></div>
+                    <div class="relative z-10 max-w-2xl space-y-4">
+                        <span class="bg-amber-500/20 text-amber-300 border border-amber-500/30 px-3 py-1 rounded-full text-xs font-semibold tracking-wider uppercase">Safe & Comfortable Journeys</span>
+                        <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight">Book Your Express Bus Tickets Online</h1>
+                        <p class="text-slate-300 text-base md:text-lg">Discover top-rated Volvo, Sleeper Coach, and AC buses across major routes with instant seat selection and secure payments.</p>
+                    </div>
+
+                    <!-- Search Bar Widget -->
+                    <div class="relative z-10 mt-8 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl p-4 md:p-6 text-slate-800">
+                        <form id="search-form" onsubmit="handleSearchSubmit(event)" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                            <div>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1"><i class="fa-solid fa-route text-amber-500 mr-1"></i> Route / Destination</label>
+                                <select id="search-route" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-sm font-medium focus:ring-2 focus:ring-amber-500 outline-none">
+                                    <option value="New York to Washington DC">New York to Washington DC</option>
+                                    <option value="San Francisco to Los Angeles">San Francisco to Los Angeles</option>
+                                    <option value="Chicago to Detroit">Chicago to Detroit</option>
+                                    <option value="Miami to Orlando">Miami to Orlando</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1"><i class="fa-solid fa-calendar-days text-amber-500 mr-1"></i> Travel Date</label>
+                                <input type="date" id="search-date" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-sm font-medium focus:ring-2 focus:ring-amber-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1"><i class="fa-solid fa-bus-simple text-amber-500 mr-1"></i> Bus Category</label>
+                                <select id="search-category" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-sm font-medium focus:ring-2 focus:ring-amber-500 outline-none">
+                                    <option value="all">All Categories</option>
+                                    <option value="Volvo AC">Volvo AC</option>
+                                    <option value="Sleeper Coach">Sleeper Coach</option>
+                                    <option value="Luxury Seater">Luxury Seater</option>
+                                    <option value="Express Coach">Express Coach</option>
+                                </select>
+                            </div>
+                            <div>
+                                <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 px-4 rounded-xl shadow-md transition flex items-center justify-center space-x-2">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                    <span>Search Buses</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Search Results Section -->
+                <div id="search-results-container" class="space-y-6 hidden">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-2xl font-bold text-slate-900" id="search-results-title">Available Buses</h2>
+                        <span class="text-sm text-slate-500 bg-slate-200 px-3 py-1 rounded-full font-medium" id="search-results-count">0 found</span>
+                    </div>
+                    <div id="search-results-list" class="space-y-4">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Highlights Section -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 py-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-start space-x-4">
+                        <div class="bg-amber-100 text-amber-600 p-3 rounded-xl"><i class="fa-solid fa-shield-halved text-xl"></i></div>
+                        <div>
+                            <h3 class="font-bold text-slate-900">100% Secure Payments</h3>
+                            <p class="text-slate-600 text-sm mt-1">Encrypted gateway integration with instant electronic ticket dispatch.</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-start space-x-4">
+                        <div class="bg-amber-100 text-amber-600 p-3 rounded-xl"><i class="fa-solid fa-clock-rotate-left text-xl"></i></div>
+                        <div>
+                            <h3 class="font-bold text-slate-900">Easy Cancellation</h3>
+                            <p class="text-slate-600 text-sm mt-1">Cancel tickets seamlessly through your dashboard with automated refunds.</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-start space-x-4">
+                        <div class="bg-amber-100 text-amber-600 p-3 rounded-xl"><i class="fa-solid fa-comments text-xl"></i></div>
+                        <div>
+                            <h3 class="font-bold text-slate-900">Verified Comments</h3>
+                            <p class="text-slate-600 text-sm mt-1">Read honest ratings and feedback posted by fellow travelers.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: MY BOOKINGS -->
+            <div id="tab-history" class="tab-content space-y-8">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900">My Booking History</h2>
+                        <p class="text-slate-600 text-sm">View your active and past tickets, download confirmations, or cancel trips.</p>
+                    </div>
+                    <span class="text-xs font-semibold uppercase bg-amber-100 text-amber-800 px-3 py-1.5 rounded-lg">Instant Cancellation Support</span>
+                </div>
+                <div id="bookings-list-container" class="space-y-4">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- TAB 3: TRAVEL NEWS -->
+            <div id="tab-news" class="tab-content space-y-8 max-w-4xl mx-auto">
+                <div class="text-center space-y-2">
+                    <h2 class="text-3xl font-extrabold text-slate-900">Latest Travel News & Announcements</h2>
+                    <p class="text-slate-600">Stay updated on new routes, holiday discounts, and transit guidelines.</p>
+                </div>
+                <div id="news-list-container" class="space-y-6">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- TAB 4: ADMIN PORTAL -->
+            <div id="tab-admin" class="tab-content space-y-8">
+                <!-- Admin Auth Gate -->
+                <div id="admin-auth-gate" class="max-w-md mx-auto bg-white p-8 rounded-3xl shadow-xl border border-slate-200 mt-12">
+                    <div class="text-center space-y-2 mb-6">
+                        <div class="w-16 h-16 bg-purple-100 text-purple-600 rounded-2xl mx-auto flex items-center justify-center text-2xl shadow-inner"><i class="fa-solid fa-shield-halved"></i></div>
+                        <h2 class="text-2xl font-bold text-slate-900">Administrator Portal</h2>
+                        <p class="text-slate-500 text-sm">Enter admin credentials to manage buses, users, news & reports.</p>
+                    </div>
+                    <form onsubmit="handleAdminLogin(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Username</label>
+                            <input type="text" id="admin-username" required value="admin" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-purple-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Password</label>
+                            <input type="password" id="admin-password" required value="admin123" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-purple-500 outline-none">
+                        </div>
+                        <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-xl shadow-md transition">Access Admin Panel</button>
+                        <p class="text-xs text-center text-slate-400 mt-2">Default demo: admin / admin123</p>
+                    </form>
+                </div>
+
+                <!-- Admin Dashboard (Hidden until logged in) -->
+                <div id="admin-dashboard" class="hidden space-y-8">
+                    <div class="bg-gradient-to-r from-purple-900 to-indigo-900 text-white p-6 md:p-8 rounded-3xl shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                            <span class="bg-purple-500/30 text-purple-200 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider">Admin Control Center</span>
+                            <h2 class="text-3xl font-extrabold mt-2">Management Dashboard</h2>
+                            <p class="text-purple-200 text-sm mt-1">Maintain buses, categories, users, news broadcasts, and financial reports.</p>
+                        </div>
+                        <button onclick="logoutAdmin()" class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl text-sm font-medium transition border border-white/20"><i class="fa-solid fa-right-from-bracket mr-2"></i> Log Out Admin</button>
+                    </div>
+
+                    <!-- Admin Sub-Nav -->
+                    <div class="flex flex-wrap gap-2 border-b border-slate-200 pb-4">
+                        <button onclick="switchAdminSub('admin-buses')" class="admin-sub-btn px-4 py-2 bg-purple-600 text-white rounded-xl text-sm font-medium transition shadow-sm" data-sub="admin-buses"><i class="fa-solid fa-bus mr-1.5"></i> Manage Buses</button>
+                        <button onclick="switchAdminSub('admin-categories')" class="admin-sub-btn px-4 py-2 bg-white text-slate-700 hover:bg-slate-100 rounded-xl text-sm font-medium transition border border-slate-200" data-sub="admin-categories"><i class="fa-solid fa-list mr-1.5"></i> Bus Categories</button>
+                        <button onclick="switchAdminSub('admin-users')" class="admin-sub-btn px-4 py-2 bg-white text-slate-700 hover:bg-slate-100 rounded-xl text-sm font-medium transition border border-slate-200" data-sub="admin-users"><i class="fa-solid fa-users mr-1.5"></i> Registered Users</button>
+                        <button onclick="switchAdminSub('admin-news')" class="admin-sub-btn px-4 py-2 bg-white text-slate-700 hover:bg-slate-100 rounded-xl text-sm font-medium transition border border-slate-200" data-sub="admin-news"><i class="fa-solid fa-newspaper mr-1.5"></i> Manage News</button>
+                        <button onclick="switchAdminSub('admin-reports')" class="admin-sub-btn px-4 py-2 bg-white text-slate-700 hover:bg-slate-100 rounded-xl text-sm font-medium transition border border-slate-200" data-sub="admin-reports"><i class="fa-solid fa-chart-line mr-1.5"></i> Reports & Analytics</button>
+                    </div>
+
+                    <!-- Sub 1: Manage Buses -->
+                    <div id="admin-buses" class="admin-sub-content space-y-6">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-xl font-bold text-slate-900">Bus Fleet & Schedules</h3>
+                            <button onclick="openAddBusModal()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-semibold shadow transition"><i class="fa-solid fa-plus mr-1"></i> Add New Bus</button>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="admin-bus-cards-grid">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Sub 2: Bus Categories -->
+                    <div id="admin-categories" class="admin-sub-content space-y-6 hidden">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-xl font-bold text-slate-900">Bus Categories Configuration</h3>
+                            <button onclick="openAddCategoryModal()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-semibold shadow transition"><i class="fa-solid fa-plus mr-1"></i> Add Category</button>
+                        </div>
+                        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-100 text-slate-600 text-xs uppercase font-semibold">
+                                        <th class="p-4">Category Name</th>
+                                        <th class="p-4">Description</th>
+                                        <th class="p-4 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-categories-table-body" class="divide-y divide-slate-200 text-sm">
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Sub 3: Registered Users -->
+                    <div id="admin-users" class="admin-sub-content space-y-6 hidden">
+                        <h3 class="text-xl font-bold text-slate-900">Registered Users Directory</h3>
+                        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-100 text-slate-600 text-xs uppercase font-semibold">
+                                        <th class="p-4">Name</th>
+                                        <th class="p-4">Email</th>
+                                        <th class="p-4">Phone</th>
+                                        <th class="p-4 text-right">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-users-table-body" class="divide-y divide-slate-200 text-sm">
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Sub 4: Manage News -->
+                    <div id="admin-news" class="admin-sub-content space-y-6 hidden">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-xl font-bold text-slate-900">News & Announcements Management</h3>
+                            <button onclick="openAddNewsModal()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-semibold shadow transition"><i class="fa-solid fa-plus mr-1"></i> Post News</button>
+                        </div>
+                        <div id="admin-news-grid" class="space-y-4">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Sub 5: Reports -->
+                    <div id="admin-reports" class="admin-sub-content space-y-6 hidden">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-xl font-bold text-slate-900">System Financial & Booking Reports</h3>
+                            <button onclick="generateSystemReport()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow transition"><i class="fa-solid fa-download mr-1"></i> Export Report PDF/CSV</button>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-1">
+                                <span class="text-xs text-slate-500 uppercase font-semibold">Total Revenue</span>
+                                <h4 class="text-3xl font-extrabold text-slate-900" id="report-total-revenue">$0.00</h4>
+                            </div>
+                            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-1">
+                                <span class="text-xs text-slate-500 uppercase font-semibold">Total Tickets Booked</span>
+                                <h4 class="text-3xl font-extrabold text-slate-900" id="report-total-tickets">0</h4>
+                            </div>
+                            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-1">
+                                <span class="text-xs text-slate-500 uppercase font-semibold">Cancelled Bookings</span>
+                                <h4 class="text-3xl font-extrabold text-slate-900" id="report-total-cancelled">0</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 5: USER PROFILE & UTILITIES (Change Password / Forgot Password) -->
+            <div id="tab-profile" class="tab-content space-y-8 max-w-2xl mx-auto">
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 space-y-6">
+                    <div class="flex items-center space-x-4 border-b pb-6">
+                        <div class="w-16 h-16 rounded-full bg-amber-500 text-white font-bold text-2xl flex items-center justify-center shadow-lg" id="profile-avatar-large">U</div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-slate-900" id="profile-name-header">User Profile</h2>
+                            <p class="text-slate-500 text-sm" id="profile-email-header">user@example.com</p>
+                        </div>
+                    </div>
+                    <form onsubmit="handleProfileUpdate(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Full Name</label>
+                            <input type="text" id="profile-fullname" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Email Address</label>
+                            <input type="email" id="profile-email" disabled class="w-full bg-slate-100 border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-500 cursor-not-allowed">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Phone Number</label>
+                            <input type="text" id="profile-phone" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                        </div>
+                        <div class="pt-2 border-t">
+                            <h4 class="font-bold text-slate-900 text-sm mb-3">Change Password</h4>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">New Password (leave blank to keep current)</label>
+                                    <input type="password" id="profile-password" placeholder="••••••••" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pt-4 flex justify-end space-x-3">
+                            <button type="button" onclick="switchTab('home')" class="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-xl text-sm transition">Cancel</button>
+                            <button type="submit" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl text-sm transition shadow-md">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-indigo-950 text-slate-400 mt-20 border-t border-indigo-900">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="space-y-4">
+                    <div class="flex items-center space-x-3 text-white">
+                        <div class="bg-amber-500 p-2 rounded-xl text-white"><i class="fa-solid fa-bus"></i></div>
+                        <span class="text-lg font-bold">TransitGo Express</span>
+                    </div>
+                    <p class="text-xs text-slate-400 leading-relaxed">Connecting cities nationwide with premium Volvo, Sleeper, and Luxury coach services.</p>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold text-sm uppercase tracking-wider mb-4">Quick Links</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" onclick="switchTab('home')" class="hover:text-white transition">Search Buses</a></li>
+                        <li><a href="#" onclick="switchTab('news')" class="hover:text-white transition">Travel News</a></li>
+                        <li><a href="#" onclick="openModal('loginModal')" class="hover:text-white transition">User Login</a></li>
+                        <li><a href="#" onclick="openModal('registerModal')" class="hover:text-white transition">User Registration</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold text-sm uppercase tracking-wider mb-4">Top Routes</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><span class="text-slate-400">New York &rarr; Washington DC</span></li>
+                        <li><span class="text-slate-400">San Francisco &rarr; Los Angeles</span></li>
+                        <li><span class="text-slate-400">Chicago &rarr; Detroit</span></li>
+                        <li><span class="text-slate-400">Miami &rarr; Orlando</span></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-semibold text-sm uppercase tracking-wider mb-4">Newsletter</h4>
+                    <p class="text-xs text-slate-400 mb-3">Subscribe for instant discount coupons.</p>
+                    <div class="flex">
+                        <input type="email" placeholder="Your email" class="bg-indigo-900 border border-indigo-800 px-3 py-2 rounded-l-xl text-sm text-white w-full focus:outline-none">
+                        <button onclick="showToast('Subscribed successfully!', 'success')" class="bg-amber-500 hover:bg-amber-600 text-white px-4 rounded-r-xl text-sm"><i class="fa-solid fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 border-t border-indigo-900 text-xs text-center">
+                &copy; 2026 TransitGo Bus Booking System. All rights reserved. Fully Responsive Web Application.
+            </div>
+        </footer>
+    </div>
+
+    <!-- MODALS -->
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 relative">
+            <button onclick="closeModal('loginModal')" class="absolute top-6 right-6 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <div class="text-center mb-6">
+                <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-2xl mx-auto flex items-center justify-center text-xl mb-2"><i class="fa-solid fa-user"></i></div>
+                <h3 class="text-2xl font-bold text-slate-900">Welcome Back</h3>
+                <p class="text-slate-500 text-sm">Log in to manage bookings and profile</p>
+            </div>
+            <form onsubmit="handleUserLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Email Address</label>
+                    <input type="email" id="login-email" required placeholder="john@example.com" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Password</label>
+                    <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                </div>
+                <div class="flex justify-between items-center text-xs">
+                    <button type="button" onclick="closeModal('loginModal'); openModal('forgotModal');" class="text-amber-600 hover:underline">Forgot Password?</button>
+                </div>
+                <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 rounded-xl shadow-md transition">Log In</button>
+            </form>
+            <div class="mt-4 text-center text-xs text-slate-500">
+                Don't have an account? <button onclick="closeModal('loginModal'); openModal('registerModal');" class="text-amber-600 font-semibold hover:underline">Register here</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="registerModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 relative">
+            <button onclick="closeModal('registerModal')" class="absolute top-6 right-6 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <div class="text-center mb-6">
+                <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-2xl mx-auto flex items-center justify-center text-xl mb-2"><i class="fa-solid fa-user-plus"></i></div>
+                <h3 class="text-2xl font-bold text-slate-900">Create an Account</h3>
+                <p class="text-slate-500 text-sm">Register to book bus tickets and track history</p>
+            </div>
+            <form onsubmit="handleUserRegister(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Full Name</label>
+                    <input type="text" id="reg-name" required placeholder="John Doe" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Email Address</label>
+                    <input type="email" id="reg-email" required placeholder="john@example.com" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Phone Number</label>
+                    <input type="text" id="reg-phone" required placeholder="+1 (555) 019-2834" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Password</label>
+                    <input type="password" id="reg-password" required placeholder="••••••••" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                </div>
+                <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 rounded-xl shadow-md transition">Register Account</button>
+            </form>
+            <div class="mt-4 text-center text-xs text-slate-500">
+                Already registered? <button onclick="closeModal('registerModal'); openModal('loginModal');" class="text-amber-600 font-semibold hover:underline">Log in</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div id="forgotModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 relative">
+            <button onclick="closeModal('forgotModal')" class="absolute top-6 right-6 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <div class="text-center mb-6">
+                <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-2xl mx-auto flex items-center justify-center text-xl mb-2"><i class="fa-solid fa-key"></i></div>
+                <h3 class="text-2xl font-bold text-slate-900">Reset Password</h3>
+                <p class="text-slate-500 text-sm">Enter your registered email to receive reset instructions</p>
+            </div>
+            <form onsubmit="handleForgotPassword(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Email Address</label>
+                    <input type="email" id="forgot-email" required placeholder="john@example.com" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                </div>
+                <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 rounded-xl shadow-md transition">Send Reset Link</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Seat Booking & Payment Modal -->
+    <div id="bookingModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-8 relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeModal('bookingModal')" class="absolute top-6 right-6 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <div class="mb-6">
+                <span class="text-xs font-semibold text-amber-600 uppercase tracking-wider">Ticket Reservation</span>
+                <h3 class="text-2xl font-bold text-slate-900" id="modal-bus-title">Book Express Bus</h3>
+                <p class="text-slate-500 text-sm" id="modal-bus-route">Route details & fare</p>
+            </div>
+            <form onsubmit="confirmBooking(event)" class="space-y-6">
+                <input type="hidden" id="booking-bus-id">
+                
+                <!-- Seat selection grid -->
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-600 mb-2"><i class="fa-solid fa-chair text-amber-500 mr-1"></i> Select Seat Number</label>
+                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 grid grid-cols-4 gap-3 text-center" id="seats-grid-container">
+                        <!-- Populated by JS -->
+                    </div>
+                    <input type="hidden" id="selected-seat-input" required>
+                </div>
+
+                <!-- Passenger Details -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Passenger Full Name</label>
+                        <input type="text" id="passenger-name" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Passenger Phone</label>
+                        <input type="text" id="passenger-phone" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Travel Date</label>
+                        <input type="date" id="booking-date" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Payment Gateway</label>
+                        <select id="booking-payment" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                            <option value="Credit/Debit Card">Credit / Debit Card (Secure)</option>
+                            <option value="PayPal">PayPal Gateway</option>
+                            <option value="Apple Pay">Apple Pay</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex justify-between items-center">
+                    <div>
+                        <span class="text-xs text-amber-800 font-medium block">Total Fare</span>
+                        <span class="text-lg font-bold text-amber-900" id="booking-total-fare">$45.00</span>
+                    </div>
+                    <span class="text-xs text-slate-600" id="booking-selected-seat-label">Seat: None selected</span>
+                </div>
+
+                <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3.5 rounded-xl shadow-md transition flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-lock"></i>
+                    <span>Confirm & Pay Securely</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bus Detail & Comments Modal -->
+    <div id="busDetailModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-8 relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeModal('busDetailModal')" class="absolute top-6 right-6 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <div id="bus-detail-content" class="space-y-6">
+                <!-- Populated dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Add/Edit Bus Modal -->
+    <div id="adminBusModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-8 relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeModal('adminBusModal')" class="absolute top-6 right-6 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <div class="mb-6">
+                <h3 class="text-2xl font-bold text-slate-900" id="admin-bus-modal-title">Add New Bus</h3>
+            </div>
+            <form onsubmit="saveBusAdmin(event)" class="space-y-4">
+                <input type="hidden" id="admin-bus-id">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Bus Name / Number</label>
+                    <input type="text" id="admin-bus-name" required placeholder="TransitGo Express 101" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-purple-500 outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Category</label>
+                        <select id="admin-bus-category" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 outline-none">
+                            <option value="Volvo AC">Volvo AC</option>
+                            <option value="Sleeper Coach">Sleeper Coach</option>
+                            <option value="Luxury Seater">Luxury Seater</option>
+                            <option value="Express Coach">Express Coach</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Route / Location</label>
+                        <select id="admin-bus-route" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 outline-none">
+                            <option value="New York to Washington DC">New York to Washington DC</option>
+                            <option value="San Francisco to Los Angeles">San Francisco to Los Angeles</option>
+                            <option value="Chicago to Detroit">Chicago to Detroit</option>
+                            <option value="Miami to Orlando">Miami to Orlando</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Departure Time</label>
+                        <input type="text" id="admin-bus-time" required placeholder="08:00 AM" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Ticket Price ($)</label>
+                        <input type="number" id="admin-bus-price" required value="45" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Total Seats</label>
+                        <input type="number" id="admin-bus-seats" required value="32" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Photo Image URL</label>
+                    <input type="url" id="admin-bus-photo" required value="https://placehold.co/600x400/312e81/ffffff?text=Volvo+Bus" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-purple-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Description & Amenities</label>
+                    <textarea id="admin-bus-desc" rows="3" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-purple-500 outline-none">Reclining seats, Wi-Fi, charging ports, bottled water included.</textarea>
+                </div>
+                <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-xl shadow-md transition">Save Bus Information</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Add Category Modal -->
+    <div id="adminCategoryModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 relative">
+            <button onclick="closeModal('adminCategoryModal')" class="absolute top-6 right-6 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <div class="mb-6">
+                <h3 class="text-2xl font-bold text-slate-900">Add Bus Category</h3>
+            </div>
+            <form onsubmit="saveCategoryAdmin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Category Name</label>
+                    <input type="text" id="admin-cat-name" required placeholder="AC Sleeper Plus" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-purple-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Description</label>
+                    <textarea id="admin-cat-desc" rows="3" required placeholder="Luxury berths with individual entertainment screens." class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-purple-500 outline-none"></textarea>
+                </div>
+                <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-xl shadow-md transition">Save Category</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Add News Modal -->
+    <div id="adminNewsModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 relative">
+            <button onclick="closeModal('adminNewsModal')" class="absolute top-6 right-6 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <div class="mb-6">
+                <h3 class="text-2xl font-bold text-slate-900">Post Travel News</h3>
+            </div>
+            <form onsubmit="saveNewsAdmin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">News Title</label>
+                    <input type="text" id="admin-news-title" required placeholder="Summer Holiday Special Discounts" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-purple-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Content / Announcement</label>
+                    <textarea id="admin-news-content" rows="4" required placeholder="Enjoy 20% off all Volvo AC routes during the upcoming weekend..." class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-purple-500 outline-none"></textarea>
+                </div>
+                <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-xl shadow-md transition">Publish News</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        /* --- APP STATE & LOCALSTORAGE --- */
+        const defaultBuses = [
+            { id: 1, name: "Volvo Royal Express 501", category: "Volvo AC", route: "New York to Washington DC", time: "07:30 AM", price: 55, seats: 32, bookedSeats: ["1A", "2B"], photo: "https://placehold.co/600x400/312e81/ffffff?text=Volvo+AC", desc: "Ultra-luxury reclining seats, Wi-Fi, onboard snacks, charging ports." },
+            { id: 2, name: "NightStar Sleeper 204", category: "Sleeper Coach", route: "San Francisco to Los Angeles", time: "09:00 PM", price: 85, seats: 24, bookedSeats: ["3A"], photo: "https://placehold.co/600x400/1e1b4b/ffffff?text=Sleeper+Coach", desc: "Private sleeping berths, reading lights, blanket and pillow provided." },
+            { id: 3, name: "MetroCoast Seater 112", category: "Luxury Seater", route: "Chicago to Detroit", time: "01:15 PM", price: 40, seats: 40, bookedSeats: ["4C", "4D"], photo: "https://placehold.co/600x400/4338ca/ffffff?text=Luxury+Seater", desc: "Comfortable ergonomic seating with ample legroom and air conditioning." },
+            { id: 4, name: "SunExpress 309", category: "Express Coach", route: "Miami to Orlando", time: "10:00 AM", price: 45, seats: 36, bookedSeats: ["1D"], photo: "https://placehold.co/600x400/3730a3/ffffff?text=Express+Coach", desc: "Express non-stop route with free Wi-Fi and complimentary mineral water." }
+        ];
+
+        const defaultCategories = [
+            { name: "Volvo AC", desc: "Premium air-conditioned buses with high back reclining seats." },
+            { name: "Sleeper Coach", desc: "Berth-style sleeping coaches for comfortable overnight journeys." },
+            { name: "Luxury Seater", desc: "Standard luxury seating with ample legroom." },
+            { name: "Express Coach", desc: "Non-stop fast transit express buses." }
+        ];
+
+        const defaultNews = [
+            { id: 1, title: "Summer Season 20% Discount on All Volvo AC Routes!", date: "June 1, 2026", content: "Book your weekend getaways now using code SUMMERTRAVEL20 to get 20% off on all Volvo AC coach bookings." },
+            { id: 2, title: "New Fleet Added for San Francisco to Los Angeles", date: "May 20, 2026", content: "We have added 5 new Sleeper Coaches to accommodate heavy summer traffic. Enjoy complimentary refreshments on board." }
+        ];
+
+        let buses = JSON.parse(localStorage.getItem('tg_buses')) || defaultBuses;
+        let categories = JSON.parse(localStorage.getItem('tg_categories')) || defaultCategories;
+        let newsList = JSON.parse(localStorage.getItem('tg_news')) || defaultNews;
+        let users = JSON.parse(localStorage.getItem('tg_users')) || [
+            { name: "Demo User", email: "user@example.com", phone: "+15550192834", password: "password123" }
+        ];
+        let currentUser = JSON.parse(localStorage.getItem('tg_current_user')) || null;
+        let isAdminLoggedIn = JSON.parse(localStorage.getItem('tg_admin_logged')) || false;
+        let bookings = JSON.parse(localStorage.getItem('tg_bookings')) || [
+            { id: "TR-9001", userEmail: "user@example.com", busName: "Volvo Royal Express 501", route: "New York to Washington DC", date: "2026-06-15", seat: "2A", passenger: "Demo User", fare: 55, status: "Confirmed", payment: "Credit/Debit Card" }
+        ];
+        let comments = JSON.parse(localStorage.getItem('tg_comments')) || [
+            { busId: 1, user: "Alice Smith", comment: "Very clean bus and extremely punctual arrival!", date: "2026-05-10" }
+        ];
+
+        function saveState() {
+            localStorage.setItem('tg_buses', JSON.stringify(buses));
+            localStorage.setItem('tg_categories', JSON.stringify(categories));
+            localStorage.setItem('tg_news', JSON.stringify(newsList));
+            localStorage.setItem('tg_users', JSON.stringify(users));
+            localStorage.setItem('tg_current_user', JSON.stringify(currentUser));
+            localStorage.setItem('tg_admin_logged', JSON.stringify(isAdminLoggedIn));
+            localStorage.setItem('tg_bookings', JSON.stringify(bookings));
+            localStorage.setItem('tg_comments', JSON.stringify(comments));
+        }
+
+        window.onload = function() {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById('search-date').value = tomorrow.toISOString().split('T')[0];
+
+            updateAuthUI();
+            renderBusesCatalog(buses);
+            renderNews();
+            renderAdminBuses();
+            renderAdminCategories();
+            renderAdminUsers();
+            renderAdminNews();
+            renderReports();
+            renderBookings();
+        };
+
+        /* --- TABS NAVIGATION --- */
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            const target = document.getElementById('tab-' + tabId);
+            if (target) target.classList.add('active');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                if (btn.getAttribute('data-target') === tabId) {
+                    btn.classList.add('text-amber-400');
+                    btn.classList.remove('text-slate-300');
+                } else {
+                    btn.classList.remove('text-amber-400');
+                    if(btn.getAttribute('data-target') !== 'admin') btn.classList.add('text-slate-300');
+                }
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function switchAdminSub(subId) {
+            document.querySelectorAll('.admin-sub-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(subId).classList.remove('hidden');
+
+            document.querySelectorAll('.admin-sub-btn').forEach(btn => {
+                if(btn.getAttribute('data-sub') === subId) {
+                    btn.classList.add('bg-purple-600', 'text-white', 'shadow-sm');
+                    btn.classList.remove('bg-white', 'text-slate-700', 'border');
+                } else {
+                    btn.classList.remove('bg-purple-600', 'text-white', 'shadow-sm');
+                    btn.classList.add('bg-white', 'text-slate-700', 'border', 'border-slate-200');
+                }
+            });
+        }
+
+        function toggleMobileMenu() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        }
+
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').textContent = message;
+            toast.className = `fixed top-5 right-5 z-50 transform translate-y-0 px-6 py-4 rounded-xl shadow-2xl text-white font-medium flex items-center space-x-3 transition-all duration-300 ${type === 'success' ? 'bg-emerald-600' : 'bg-rose-600'}`;
+            document.getElementById('toast-icon').className = type === 'success' ? 'fa-solid fa-circle-check text-xl' : 'fa-solid fa-circle-exclamation text-xl';
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3500);
+        }
+
+        /* --- AUTHENTICATION & PROFILE --- */
+        function updateAuthUI() {
+            const guestDiv = document.getElementById('user-guest-actions');
+            const loggedDiv = document.getElementById('user-logged-actions');
+            const authRequiredEls = document.querySelectorAll('.auth-required');
+
+            if (currentUser) {
+                guestDiv.classList.add('hidden');
+                loggedDiv.classList.remove('hidden');
+                authRequiredEls.forEach(el => el.classList.remove('hidden'));
+                document.getElementById('user-display-name').textContent = currentUser.name;
+                document.getElementById('user-avatar-initials').textContent = currentUser.name.charAt(0).toUpperCase();
+
+                document.getElementById('profile-fullname').value = currentUser.name;
+                document.getElementById('profile-email').value = currentUser.email;
+                document.getElementById('profile-phone').value = currentUser.phone || '';
+                document.getElementById('profile-name-header').textContent = currentUser.name;
+                document.getElementById('profile-email-header').textContent = currentUser.email;
+                document.getElementById('profile-avatar-large').textContent = currentUser.name.charAt(0).toUpperCase();
+            } else {
+                guestDiv.classList.remove('hidden');
+                loggedDiv.classList.add('hidden');
+                authRequiredEls.forEach(el => el.classList.add('hidden'));
+            }
+
+            if (isAdminLoggedIn) {
+                document.getElementById('admin-auth-gate').classList.add('hidden');
+                document.getElementById('admin-dashboard').classList.remove('hidden');
+            } else {
+                document.getElementById('admin-auth-gate').classList.remove('hidden');
+                document.getElementById('admin-dashboard').classList.add('hidden');
+            }
+        }
+
+        function handleUserRegister(e) {
+            e.preventDefault();
+            const name = document.getElementById('reg-name').value;
+            const email = document.getElementById('reg-email').value;
+            const phone = document.getElementById('reg-phone').value;
+            const password = document.getElementById('reg-password').value;
+
+            if (users.some(u => u.email === email)) {
+                showToast('Email already registered. Please login.', 'error');
+                return;
+            }
+
+            const newUser = { name, email, phone, password };
+            users.push(newUser);
+            currentUser = newUser;
+            saveState();
+            closeModal('registerModal');
+            updateAuthUI();
+            renderAdminUsers();
+            showToast('Registration successful! Welcome to TransitGo.', 'success');
+        }
+
+        function handleUserLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            const found = users.find(u => u.email === email && u.password === password);
+            if (found) {
+                currentUser = found;
+                saveState();
+                closeModal('loginModal');
+                updateAuthUI();
+                showToast('Logged in successfully!', 'success');
+            } else {
+                showToast('Invalid email or password.', 'error');
+            }
+        }
+
+        function logoutUser() {
+            currentUser = null;
+            saveState();
+            updateAuthUI();
+            switchTab('home');
+            showToast('Logged out successfully.', 'success');
+        }
+
+        function handleForgotPassword(e) {
+            e.preventDefault();
+            const email = document.getElementById('forgot-email').value;
+            const user = users.find(u => u.email === email);
+            if (user) {
+                showToast(`Password reset link sent to ${email}`, 'success');
+                closeModal('forgotModal');
+            } else {
+                showToast('Email address not found in our records.', 'error');
+            }
+        }
+
+        function handleProfileUpdate(e) {
+            e.preventDefault();
+            if (!currentUser) return;
+            currentUser.name = document.getElementById('profile-fullname').value;
+            currentUser.phone = document.getElementById('profile-phone').value;
+            const newPass = document.getElementById('profile-password').value;
+            if (newPass) currentUser.password = newPass;
+
+            users = users.map(u => u.email === currentUser.email ? currentUser : u);
+            saveState();
+            updateAuthUI();
+            showToast('Profile updated successfully!', 'success');
+        }
+
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            const user = document.getElementById('admin-username').value;
+            const pass = document.getElementById('admin-password').value;
+
+            if (user === 'admin' && pass === 'admin123') {
+                isAdminLoggedIn = true;
+                saveState();
+                updateAuthUI();
+                showToast('Admin access granted!', 'success');
+            } else {
+                showToast('Invalid admin credentials.', 'error');
+            }
+        }
+
+        function logoutAdmin() {
+            isAdminLoggedIn = false;
+            saveState();
+            updateAuthUI();
+            showToast('Logged out from admin panel.', 'success');
+        }
+
+        /* --- BUS SEARCH & CATALOG --- */
+        function renderBusesCatalog(list) {
+            const container = document.getElementById('search-results-list');
+            if (list.length === 0) {
+                container.innerHTML = `<div class="bg-white p-8 rounded-2xl text-center text-slate-500">No buses found matching your criteria.</div>`;
+                return;
+            }
+
+            container.innerHTML = list.map(bus => `
+                <div class="bg-white rounded-3xl overflow-hidden shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-center p-6 gap-6">
+                    <div class="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6 w-full">
+                        <img src="${bus.photo}" alt="${bus.name}" class="w-full md:w-48 h-32 rounded-2xl object-cover">
+                        <div class="space-y-1 w-full">
+                            <div class="flex items-center space-x-3">
+                                <span class="bg-amber-100 text-amber-800 text-xs font-bold px-2.5 py-1 rounded-full">${bus.category}</span>
+                                <span class="text-xs text-slate-500"><i class="fa-solid fa-clock text-amber-500 mr-1"></i> Departs: ${bus.time}</span>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-900">${bus.name}</h3>
+                            <p class="text-sm text-slate-600"><i class="fa-solid fa-route text-amber-500 mr-1"></i> ${bus.route}</p>
+                            <p class="text-xs text-slate-500">${bus.desc}</p>
+                            <div class="text-xs text-emerald-600 font-semibold pt-1"><i class="fa-solid fa-chair mr-1"></i> ${bus.seats - bus.bookedSeats.length} seats available</div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-end gap-3 w-full md:w-auto min-w-[160px]">
+                        <span class="text-2xl font-black text-indigo-900">$${bus.price}</span>
+                        <button onclick="openBusDetailModal(${bus.id})" class="w-full md:w-auto px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition">Details & Reviews</button>
+                        <button onclick="openBookingModal(${bus.id})" class="w-full md:w-auto px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl text-xs transition shadow-md">Book Ticket</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function handleSearchSubmit(e) {
+            e.preventDefault();
+            const route = document.getElementById('search-route').value;
+            const category = document.getElementById('search-category').value;
+
+            let filtered = buses.filter(b => b.route === route);
+            if (category !== 'all') {
+                filtered = filtered.filter(b => b.category === category);
+            }
+
+            const container = document.getElementById('search-results-container');
+            container.classList.remove('hidden');
+            document.getElementById('search-results-count').textContent = `${filtered.length} buses found`;
+            renderBusesCatalog(filtered);
+            container.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        /* --- SEAT SELECTION & BOOKING --- */
+        let selectedSeat = null;
+        let activeBookingBusId = null;
+
+        function openBookingModal(busId) {
+            if (!currentUser) {
+                showToast('Please log in or register to book tickets.', 'error');
+                openModal('loginModal');
+                return;
+            }
+
+            const bus = buses.find(b => b.id === busId);
+            if (!bus) return;
+
+            activeBookingBusId = busId;
+            selectedSeat = null;
+            document.getElementById('selected-seat-input').value = '';
+            document.getElementById('booking-selected-seat-label').textContent = 'Seat: None selected';
+            document.getElementById('booking-bus-id').value = busId;
+            document.getElementById('modal-bus-title').textContent = bus.name;
+            document.getElementById('modal-bus-route').textContent = `${bus.route} | Fare: $${bus.price}`;
+            document.getElementById('booking-total-fare').textContent = `$${bus.price}.00`;
+            document.getElementById('passenger-name').value = currentUser.name;
+            document.getElementById('passenger-phone').value = currentUser.phone || '';
+            document.getElementById('booking-date').value = document.getElementById('search-date').value;
+
+            // Render seats
+            const seatsGrid = document.getElementById('seats-grid-container');
+            let seatsHtml = '';
+            const totalSeatsNum = bus.seats;
+            const rows = Math.ceil(totalSeatsNum / 4);
+
+            for (let r = 1; r <= rows; r++) {
+                ['A', 'B', 'C', 'D'].forEach(col => {
+                    const seatCode = `${r}${col}`;
+                    const isBooked = bus.bookedSeats.includes(seatCode);
+                    if (r * 4 - 4 + ['A', 'B', 'C', 'D'].indexOf(col) < totalSeatsNum) {
+                        if (isBooked) {
+                            seatsHtml += `<div class="p-2 bg-slate-200 text-slate-400 rounded-xl text-xs font-bold cursor-not-allowed">${seatCode} (Booked)</div>`;
+                        } else {
+                            seatsHtml += `<div onclick="selectSeat('${seatCode}', this)" class="seat-btn p-2 bg-white hover:bg-amber-100 border border-slate-300 rounded-xl text-xs font-bold cursor-pointer transition">${seatCode}</div>`;
+                        }
+                    }
+                });
+            }
+            seatsGrid.innerHTML = seatsHtml;
+            openModal('bookingModal');
+        }
+
+        function selectSeat(seatCode, el) {
+            document.querySelectorAll('.seat-btn').forEach(b => b.classList.remove('bg-amber-500', 'text-white'));
+            el.classList.add('bg-amber-500', 'text-white');
+            selectedSeat = seatCode;
+            document.getElementById('selected-seat-input').value = seatCode;
+            document.getElementById('booking-selected-seat-label').textContent = `Seat: ${seatCode}`;
+        }
+
+        function confirmBooking(e) {
+            e.preventDefault();
+            if (!selectedSeat) {
+                showToast('Please select a seat.', 'error');
+                return;
+            }
+
+            const bus = buses.find(b => b.id === activeBookingBusId);
+            const passenger = document.getElementById('passenger-name').value;
+            const date = document.getElementById('booking-date').value;
+            const payment = document.getElementById('booking-payment').value;
+
+            bus.bookedSeats.push(selectedSeat);
+
+            const newBooking = {
+                id: "TR-" + Math.floor(1000 + Math.random() * 9000),
+                userEmail: currentUser.email,
+                busName: bus.name,
+                route: bus.route,
+                date,
+                seat: selectedSeat,
+                passenger,
+                fare: bus.price,
+                status: "Confirmed",
+                payment
+            };
+
+            bookings.unshift(newBooking);
+            saveState();
+            closeModal('bookingModal');
+            renderBusesCatalog(buses);
+            renderBookings();
+            renderReports();
+            showToast('Ticket booked successfully! Confirmation email sent.', 'success');
+            switchTab('history');
+        }
+
+        /* --- MY BOOKINGS & CANCELLATION --- */
+        function renderBookings() {
+            const container = document.getElementById('bookings-list-container');
+            if (!currentUser) return;
+
+            const userBookings = bookings.filter(b => b.userEmail === currentUser.email);
+            if (userBookings.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white p-12 rounded-3xl text-center space-y-4 border border-slate-200">
+                        <div class="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto text-2xl"><i class="fa-solid fa-ticket"></i></div>
+                        <h3 class="text-xl font-bold text-slate-900">No Tickets Booked</h3>
+                        <p class="text-slate-500 text-sm">You haven't booked any bus tickets yet. Search routes and reserve your seats today!</p>
+                        <button onclick="switchTab('home')" class="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl text-sm transition">Find Buses</button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = userBookings.map(b => `
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                    <div class="space-y-2">
+                        <div class="flex items-center space-x-3">
+                            <span class="font-mono text-xs font-bold text-slate-500">${b.id}</span>
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold ${b.status === 'Cancelled' ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800'}">${b.status}</span>
+                            <span class="text-xs text-slate-400">Paid via ${b.payment}</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900">${b.busName}</h3>
+                        <p class="text-sm text-slate-600"><i class="fa-solid fa-route text-amber-500 mr-1"></i> ${b.route}</p>
+                        <div class="flex flex-wrap gap-4 text-xs text-slate-500 font-medium pt-1">
+                            <span><i class="fa-solid fa-calendar-days text-amber-500 mr-1"></i> Date: ${b.date}</span>
+                            <span><i class="fa-solid fa-chair text-amber-500 mr-1"></i> Seat: ${b.seat}</span>
+                            <span><i class="fa-solid fa-user text-amber-500 mr-1"></i> Passenger: ${b.passenger}</span>
+                            <span><i class="fa-solid fa-tag text-amber-500 mr-1"></i> Fare: $${b.fare}.00</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        ${b.status !== 'Cancelled' ? `<button onclick="cancelTicket('${b.id}')" class="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 font-semibold rounded-xl text-xs transition">Cancel Ticket</button>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function cancelTicket(bookingId) {
+            const booking = bookings.find(b => b.id === bookingId);
+            if (!booking) return;
+
+            booking.status = 'Cancelled';
+            // free seat in bus
+            const bus = buses.find(b => b.name === booking.busName);
+            if (bus) {
+                bus.bookedSeats = bus.bookedSeats.filter(s => s !== booking.seat);
+            }
+
+            saveState();
+            renderBookings();
+            renderReports();
+            showToast('Ticket cancelled successfully. Refund initiated.', 'success');
+        }
+
+        /* --- COMMENTS & REVIEWS --- */
+        function openBusDetailModal(busId) {
+            const bus = buses.find(b => b.id === busId);
+            if (!bus) return;
+
+            const busComments = comments.filter(c => c.busId === busId);
+
+            document.getElementById('bus-detail-content').innerHTML = `
+                <div class="space-y-4">
+                    <img src="${bus.photo}" alt="${bus.name}" class="w-full h-56 rounded-2xl object-cover">
+                    <div>
+                        <span class="bg-amber-100 text-amber-800 text-xs font-bold px-2.5 py-1 rounded-full">${bus.category}</span>
+                        <h3 class="text-2xl font-bold text-slate-900 mt-2">${bus.name}</h3>
+                        <p class="text-slate-600 text-sm mt-1">${bus.desc}</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-xs font-medium text-slate-600 bg-slate-50 p-4 rounded-2xl">
+                        <div>Route: <span class="text-slate-900 font-bold">${bus.route}</span></div>
+                        <div>Departure: <span class="text-slate-900 font-bold">${bus.time}</span></div>
+                        <div>Ticket Price: <span class="text-slate-900 font-bold">$${bus.price}</span></div>
+                        <div>Available Seats: <span class="text-slate-900 font-bold">${bus.seats - bus.bookedSeats.length}</span></div>
+                    </div>
+                    <div class="border-t pt-4 space-y-4">
+                        <h4 class="font-bold text-slate-900">Traveler Comments & Reviews</h4>
+                        <div class="space-y-3 max-h-48 overflow-y-auto">
+                            ${busComments.length === 0 ? '<p class="text-xs text-slate-400">No comments yet. Be the first to review!</p>' : busComments.map(c => `
+                                <div class="bg-slate-50 p-3 rounded-xl text-xs space-y-1">
+                                    <div class="flex justify-between font-bold text-slate-800">
+                                        <span>${c.user}</span>
+                                        <span class="text-slate-400 font-normal">${c.date}</span>
+                                    </div>
+                                    <p class="text-slate-600">${c.comment}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                        ${currentUser ? `
+                            <form onsubmit="postComment(event, ${busId})" class="space-y-3 pt-2">
+                                <textarea id="new-comment-text" rows="2" required placeholder="Write your review or comment about this bus..." class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs focus:ring-2 focus:ring-amber-500 outline-none"></textarea>
+                                <button type="submit" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl text-xs transition">Post Comment</button>
+                            </form>
+                        ` : '<p class="text-xs text-amber-600">Please log in to post comments.</p>'}
+                    </div>
+                </div>
+            `;
+            openModal('busDetailModal');
+        }
+
+        function postComment(e, busId) {
+            e.preventDefault();
+            if (!currentUser) return;
+            const text = document.getElementById('new-comment-text').value;
+
+            comments.push({
+                busId,
+                user: currentUser.name,
+                comment: text,
+                date: new Date().toISOString().split('T')[0]
+            });
+            saveState();
+            openBusDetailModal(busId);
+            showToast('Comment posted successfully!', 'success');
+        }
+
+        /* --- TRAVEL NEWS --- */
+        function renderNews() {
+            const container = document.getElementById('news-list-container');
+            container.innerHTML = newsList.map(n => `
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 space-y-2">
+                    <span class="text-xs font-semibold text-amber-600">${n.date}</span>
+                    <h3 class="text-xl font-bold text-slate-900">${n.title}</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">${n.content}</p>
+                </div>
+            `).join('');
+        }
+
+        /* --- ADMIN FUNCTIONALITIES --- */
+        function renderAdminBuses() {
+            const container = document.getElementById('admin-bus-cards-grid');
+            container.innerHTML = buses.map(bus => `
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 space-y-4 flex flex-col justify-between">
+                    <div class="space-y-3">
+                        <img src="${bus.photo}" alt="${bus.name}" class="w-full h-36 rounded-2xl object-cover">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="bg-purple-100 text-purple-800 text-xs font-bold px-2 py-0.5 rounded-full">${bus.category}</span>
+                                <h4 class="font-bold text-slate-900 text-lg mt-1">${bus.name}</h4>
+                            </div>
+                            <span class="font-bold text-indigo-900">$${bus.price}</span>
+                        </div>
+                        <p class="text-xs text-slate-600"><i class="fa-solid fa-route text-purple-600 mr-1"></i> ${bus.route}</p>
+                        <p class="text-xs text-slate-500">Seats: ${bus.seats} total (${bus.bookedSeats.length} booked)</p>
+                    </div>
+                    <div class="flex space-x-2 pt-2 border-t">
+                        <button onclick="openEditBusModal(${bus.id})" class="flex-1 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition">Edit</button>
+                        <button onclick="deleteBus(${bus.id})" class="flex-1 px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 font-semibold rounded-xl text-xs transition">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openAddBusModal() {
+            document.getElementById('admin-bus-modal-title').textContent = "Add New Bus";
+            document.getElementById('admin-bus-id').value = "";
+            document.getElementById('admin-bus-name').value = "";
+            document.getElementById('admin-bus-price').value = "45";
+            document.getElementById('admin-bus-seats').value = "32";
+            document.getElementById('admin-bus-photo').value = "https://placehold.co/600x400/312e81/ffffff?text=Volvo+Bus";
+            document.getElementById('admin-bus-desc').value = "Reclining seats, Wi-Fi, charging ports.";
+            openModal('adminBusModal');
+        }
+
+        function openEditBusModal(busId) {
+            const bus = buses.find(b => b.id === busId);
+            if (!bus) return;
+
+            document.getElementById('admin-bus-modal-title').textContent = "Update Bus Information";
+            document.getElementById('admin-bus-id').value = bus.id;
+            document.getElementById('admin-bus-name').value = bus.name;
+            document.getElementById('admin-bus-category').value = bus.category;
+            document.getElementById('admin-bus-route').value = bus.route;
+            document.getElementById('admin-bus-time').value = bus.time;
+            document.getElementById('admin-bus-price').value = bus.price;
+            document.getElementById('admin-bus-seats').value = bus.seats;
+            document.getElementById('admin-bus-photo').value = bus.photo;
+            document.getElementById('admin-bus-desc').value = bus.desc;
+            openModal('adminBusModal');
+        }
+
+        function saveBusAdmin(e) {
+            e.preventDefault();
+            const id = document.getElementById('admin-bus-id').value;
+            const name = document.getElementById('admin-bus-name').value;
+            const category = document.getElementById('admin-bus-category').value;
+            const route = document.getElementById('admin-bus-route').value;
+            const time = document.getElementById('admin-bus-time').value;
+            const price = parseFloat(document.getElementById('admin-bus-price').value);
+            const seats = parseInt(document.getElementById('admin-bus-seats').value);
+            const photo = document.getElementById('admin-bus-photo').value;
+            const desc = document.getElementById('admin-bus-desc').value;
+
+            if (id) {
+                const bus = buses.find(b => b.id == id);
+                if (bus) {
+                    bus.name = name;
+                    bus.category = category;
+                    bus.route = route;
+                    bus.time = time;
+                    bus.price = price;
+                    bus.seats = seats;
+                    bus.photo = photo;
+                    bus.desc = desc;
+                }
+            } else {
+                const newBus = {
+                    id: Date.now(),
+                    name,
+                    category,
+                    route,
+                    time,
+                    price,
+                    seats,
+                    bookedSeats: [],
+                    photo,
+                    desc
+                };
+                buses.push(newBus);
+            }
+
+            saveState();
+            closeModal('adminBusModal');
+            renderBusesCatalog(buses);
+            renderAdminBuses();
+            showToast('Bus information saved successfully!', 'success');
+        }
+
+        function deleteBus(busId) {
+            buses = buses.filter(b => b.id !== busId);
+            saveState();
+            renderBusesCatalog(buses);
+            renderAdminBuses();
+            showToast('Bus deleted successfully.', 'success');
+        }
+
+        function renderAdminCategories() {
+            const tbody = document.getElementById('admin-categories-table-body');
+            tbody.innerHTML = categories.map((cat, index) => `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="p-4 font-bold text-slate-800">${cat.name}</td>
+                    <td class="p-4 text-slate-600">${cat.desc}</td>
+                    <td class="p-4 text-right">
+                        <button onclick="deleteCategory(${index})" class="px-3 py-1 bg-rose-50 text-rose-700 hover:bg-rose-100 rounded-lg text-xs font-semibold transition">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openAddCategoryModal() {
+            document.getElementById('admin-cat-name').value = "";
+            document.getElementById('admin-cat-desc').value = "";
+            openModal('adminCategoryModal');
+        }
+
+        function saveCategoryAdmin(e) {
+            e.preventDefault();
+            const name = document.getElementById('admin-cat-name').value;
+            const desc = document.getElementById('admin-cat-desc').value;
+
+            categories.push({ name, desc });
+            saveState();
+            closeModal('adminCategoryModal');
+            renderAdminCategories();
+            showToast('Category added successfully!', 'success');
+        }
+
+        function deleteCategory(index) {
+            categories.splice(index, 1);
+            saveState();
+            renderAdminCategories();
+            showToast('Category deleted.', 'success');
+        }
+
+        function renderAdminUsers() {
+            const tbody = document.getElementById('admin-users-table-body');
+            tbody.innerHTML = users.map((u, index) => `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="p-4 font-bold text-slate-800">${u.name}</td>
+                    <td class="p-4 text-slate-600">${u.email}</td>
+                    <td class="p-4 text-slate-600">${u.phone || 'N/A'}</td>
+                    <td class="p-4 text-right">
+                        <button onclick="deleteUser(${index})" class="px-3 py-1 bg-rose-50 text-rose-700 hover:bg-rose-100 rounded-lg text-xs font-semibold transition">Remove</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function deleteUser(index) {
+            users.splice(index, 1);
+            saveState();
+            renderAdminUsers();
+            showToast('User removed.', 'success');
+        }
+
+        function renderAdminNews() {
+            const container = document.getElementById('admin-news-grid');
+            container.innerHTML = newsList.map((n, index) => `
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex justify-between items-start">
+                    <div class="space-y-1">
+                        <span class="text-xs text-purple-600 font-semibold">${n.date}</span>
+                        <h4 class="font-bold text-slate-900">${n.title}</h4>
+                        <p class="text-xs text-slate-600">${n.content}</p>
+                    </div>
+                    <button onclick="deleteNews(${index})" class="px-3 py-1 bg-rose-50 text-rose-700 rounded-lg text-xs font-semibold">Delete</button>
+                </div>
+            `).join('');
+        }
+
+        function openAddNewsModal() {
+            document.getElementById('admin-news-title').value = "";
+            document.getElementById('admin-news-content').value = "";
+            openModal('adminNewsModal');
+        }
+
+        function saveNewsAdmin(e) {
+            e.preventDefault();
+            const title = document.getElementById('admin-news-title').value;
+            const content = document.getElementById('admin-news-content').value;
+
+            newsList.unshift({
+                id: Date.now(),
+                title,
+                date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                content
+            });
+            saveState();
+            closeModal('adminNewsModal');
+            renderNews();
+            renderAdminNews();
+            showToast('News published successfully!', 'success');
+        }
+
+        function deleteNews(index) {
+            newsList.splice(index, 1);
+            saveState();
+            renderNews();
+            renderAdminNews();
+            showToast('News deleted.', 'success');
+        }
+
+        function renderReports() {
+            const confirmed = bookings.filter(b => b.status === 'Confirmed');
+            const cancelled = bookings.filter(b => b.status === 'Cancelled');
+            const totalRevenue = confirmed.reduce((acc, b) => acc + b.fare, 0);
+
+            document.getElementById('report-total-revenue').textContent = `$${totalRevenue}.00`;
+            document.getElementById('report-total-tickets').textContent = confirmed.length;
+            document.getElementById('report-total-cancelled').textContent = cancelled.length;
+        }
+
+        function generateSystemReport() {
+            showToast('Report generated and downloaded successfully as PDF!', 'success');
+        }
+    </script>
+</body>
+</html>

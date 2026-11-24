@@ -1,0 +1,573 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Online Cake Ordering System</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #fff5f7;
+    color: #333;
+}
+
+header {
+    background: #b83264;
+    color: white;
+    text-align: center;
+    padding: 20px;
+}
+
+nav {
+    background: #8e2450;
+    text-align: center;
+    padding: 14px;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin: 8px;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 22px auto;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px #e5cbd4;
+}
+
+h2 { color: #b83264; }
+
+input, select, textarea, button {
+    width: 100%;
+    padding: 11px;
+    margin: 7px 0;
+}
+
+button {
+    border: none;
+    border-radius: 5px;
+    background: #b83264;
+    color: white;
+    cursor: pointer;
+}
+
+button:hover { background: #8e2450; }
+
+.cakes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 18px;
+}
+
+.cake {
+    border: 1px solid #eee;
+    padding: 14px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.cake img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.price {
+    color: #b83264;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.message {
+    background: #fff0f4;
+    padding: 12px;
+    margin-top: 12px;
+    overflow-wrap: anywhere;
+}
+
+footer {
+    text-align: center;
+    padding: 18px;
+    background: #8e2450;
+    color: white;
+}
+
+@media(max-width: 600px) {
+    .container { margin: 12px; padding: 15px; }
+    nav a { display: inline-block; }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>🎂 Sweet Cake Shop</h1>
+    <p>Fresh Cakes for Every Celebration</p>
+</header>
+
+<nav>
+    <a href="#register">Register</a>
+    <a href="#login">Login</a>
+    <a href="#shop">Shop Cakes</a>
+    <a href="#cart">My Cart</a>
+    <a href="#orders">My Orders</a>
+    <a href="#admin">Admin</a>
+</nav>
+
+<div class="container" id="register">
+<h2>Student / Customer Registration</h2>
+<form id="registerForm">
+    <input id="regName" placeholder="Full Name" required>
+    <input id="regEmail" type="email" placeholder="Email Address" required>
+    <input id="regPassword" type="password" placeholder="Password" required>
+    <button type="submit">Register</button>
+</form>
+<p id="registerMsg"></p>
+</div>
+
+<div class="container" id="login">
+<h2>Customer Login</h2>
+<form id="loginForm">
+    <input id="loginEmail" type="email" placeholder="Email Address" required>
+    <input id="loginPassword" type="password" placeholder="Password" required>
+    <button type="submit">Login</button>
+</form>
+<p id="loginMsg"></p>
+</div>
+
+<div class="container" id="shop">
+<h2>Search and Browse Cakes</h2>
+
+<input id="searchCake" placeholder="Search cake by name or flavor">
+
+<select id="categoryFilter">
+    <option value="All">All Categories</option>
+    <option value="Birthday">Birthday Cakes</option>
+    <option value="Wedding">Wedding Cakes</option>
+    <option value="Chocolate">Chocolate Cakes</option>
+    <option value="Special">Special Occasion</option>
+</select>
+
+<select id="sortPrice">
+    <option value="default">Sort by Price</option>
+    <option value="low">Low to High</option>
+    <option value="high">High to Low</option>
+</select>
+
+<label>Maximum Price (₹)</label>
+<input id="maxPrice" type="number" min="0" placeholder="e.g. 1000">
+
+<button onclick="displayCakes()">Search / Filter Cakes</button>
+
+<div class="cakes" id="cakeList"></div>
+</div>
+
+<div class="container" id="cart">
+<h2>My Shopping Cart</h2>
+<div id="cartList">Your cart is empty.</div>
+<p id="totalPrice"></p>
+
+<h3>Shipping Address</h3>
+<form id="orderForm">
+    <input id="customerName" placeholder="Recipient Name" required>
+    <input id="phone" type="tel" placeholder="Phone Number" required>
+    <textarea id="address" placeholder="Full Delivery Address" required></textarea>
+    <input id="deliveryLocation" placeholder="City / Shipping Location" required>
+    <input id="cakeMessage" placeholder="Cake Message (e.g. Happy Birthday)">
+    <select id="paymentMethod">
+        <option>Cash on Delivery (Demo)</option>
+        <option>Online Payment (Demo)</option>
+    </select>
+    <button type="submit">Place Order</button>
+</form>
+
+<div id="orderMessage"></div>
+</div>
+
+<div class="container" id="orders">
+<h2>My Orders / Shipping Status</h2>
+<div id="orderHistory">No orders placed yet.</div>
+</div>
+
+<div class="container" id="admin">
+<h2>Admin Login</h2>
+<form id="adminForm">
+    <input id="adminUser" placeholder="Admin Username" required>
+    <input id="adminPassword" type="password" placeholder="Admin Password" required>
+    <button type="submit">Login as Admin</button>
+</form>
+
+<div id="adminPanel" hidden>
+    <h2>Admin Dashboard</h2>
+    <p id="adminReport"></p>
+
+    <h3>Post New Cake</h3>
+    <input id="newCakeName" placeholder="Cake Name">
+    <input id="newCakeFlavor" placeholder="Flavor">
+    <select id="newCakeCategory">
+        <option>Birthday</option>
+        <option>Wedding</option>
+        <option>Chocolate</option>
+        <option>Special</option>
+    </select>
+    <input id="newCakePrice" type="number" min="1" placeholder="Price (₹)">
+    <input id="newCakeImage" type="url" placeholder="Image URL (optional)">
+    <textarea id="newCakeDescription" placeholder="Cake Description"></textarea>
+    <button onclick="addCake()">Add Cake</button>
+
+    <h3>Manage Orders</h3>
+    <div id="adminOrders"></div>
+    <button onclick="adminLogout()">Logout</button>
+</div>
+</div>
+
+<footer>
+    <p>Sweet Cake Shop | Online Cake Ordering System</p>
+</footer>
+
+<script>
+let cakes = [
+    {
+        id: 1,
+        name: "Chocolate Cake",
+        flavor: "Chocolate",
+        category: "Chocolate",
+        price: 550,
+        description: "Delicious chocolate cake for every occasion.",
+        image: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500"
+    },
+    {
+        id: 2,
+        name: "Birthday Cake",
+        flavor: "Vanilla",
+        category: "Birthday",
+        price: 700,
+        description: "Soft vanilla cake for birthday celebrations.",
+        image: "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=500"
+    },
+    {
+        id: 3,
+        name: "Wedding Cake",
+        flavor: "Strawberry",
+        category: "Wedding",
+        price: 1500,
+        description: "Beautiful cake for weddings and special days.",
+        image: "https://images.unsplash.com/photo-1535254973040-607b474cb50d?w=500"
+    },
+    {
+        id: 4,
+        name: "Red Velvet Cake",
+        flavor: "Red Velvet",
+        category: "Special",
+        price: 900,
+        description: "Rich red velvet cake with creamy frosting.",
+        image: "https://images.unsplash.com/photo-1586788680434-30d324b2d46f?w=500"
+    }
+];
+
+let cart = [];
+let orders = [];
+let users = [];
+let loggedIn = false;
+let adminLoggedIn = false;
+let nextCakeId = 5;
+
+function displayCakes() {
+    const query = document.getElementById("searchCake").value.toLowerCase();
+    const category = document.getElementById("categoryFilter").value;
+    const max = Number(document.getElementById("maxPrice").value) || Infinity;
+    const sort = document.getElementById("sortPrice").value;
+
+    let filtered = cakes.filter(c =>
+        (c.name.toLowerCase().includes(query) ||
+         c.flavor.toLowerCase().includes(query)) &&
+        (category === "All" || c.category === category) &&
+        c.price <= max
+    );
+
+    if (sort === "low") filtered.sort((a, b) => a.price - b.price);
+    if (sort === "high") filtered.sort((a, b) => b.price - a.price);
+
+    const list = document.getElementById("cakeList");
+
+    if (!filtered.length) {
+        list.textContent = "No cakes found. Try another search.";
+        return;
+    }
+
+    list.innerHTML = filtered.map(c => `
+        <div class="cake">
+            <img src="${c.image}" alt="${c.name}"
+                 onerror="this.style.display='none'">
+            <h3>${c.name}</h3>
+            <p>${c.description}</p>
+            <p>Flavor: ${c.flavor}</p>
+            <p>Category: ${c.category}</p>
+            <p class="price">₹${c.price}</p>
+            <button onclick="addToCart(${c.id})">Add to Cart</button>
+        </div>
+    `).join("");
+}
+
+function addToCart(id) {
+    const cake = cakes.find(c => c.id === id);
+    const item = cart.find(c => c.id === id);
+
+    if (item) item.quantity++;
+    else cart.push({...cake, quantity: 1});
+
+    displayCart();
+}
+
+function displayCart() {
+    const list = document.getElementById("cartList");
+
+    if (!cart.length) {
+        list.textContent = "Your cart is empty.";
+        document.getElementById("totalPrice").textContent = "";
+        return;
+    }
+
+    list.innerHTML = cart.map(c => `
+        <div class="message">
+            <b>${c.name}</b> - ₹${c.price} × ${c.quantity}
+            <button onclick="removeFromCart(${c.id})">Remove</button>
+            <button onclick="changeQuantity(${c.id}, 1)">+</button>
+            <button onclick="changeQuantity(${c.id}, -1)">-</button>
+        </div>
+    `).join("");
+
+    const total = cart.reduce((sum, c) => sum + c.price * c.quantity, 0);
+    document.getElementById("totalPrice").textContent = "Total: ₹" + total;
+}
+
+function removeFromCart(id) {
+    cart = cart.filter(c => c.id !== id);
+    displayCart();
+}
+
+function changeQuantity(id, amount) {
+    const item = cart.find(c => c.id === id);
+    if (!item) return;
+
+    item.quantity += amount;
+    if (item.quantity <= 0) removeFromCart(id);
+    else displayCart();
+}
+
+document.getElementById("registerForm").onsubmit = function(e) {
+    e.preventDefault();
+
+    const email = document.getElementById("regEmail").value.trim().toLowerCase();
+
+    if (users.some(u => u.email === email)) {
+        document.getElementById("registerMsg").textContent =
+            "Email already registered.";
+        return;
+    }
+
+    users.push({
+        name: document.getElementById("regName").value.trim(),
+        email,
+        password: document.getElementById("regPassword").value
+    });
+
+    document.getElementById("registerMsg").textContent =
+        "Registration successful. Please log in.";
+    this.reset();
+};
+
+document.getElementById("loginForm").onsubmit = function(e) {
+    e.preventDefault();
+
+    const email = document.getElementById("loginEmail").value.trim().toLowerCase();
+    const password = document.getElementById("loginPassword").value;
+    const user = users.find(u => u.email === email && u.password === password);
+
+    loggedIn = !!user;
+    document.getElementById("loginMsg").textContent = user
+        ? "Welcome, " + user.name + "! Login successful."
+        : "Invalid login. Please register first.";
+};
+
+document.getElementById("orderForm").onsubmit = function(e) {
+    e.preventDefault();
+
+    if (!loggedIn) {
+        alert("Please register and log in before placing an order.");
+        return;
+    }
+
+    if (!cart.length) {
+        alert("Please add cakes to your cart first.");
+        return;
+    }
+
+    const order = {
+        id: "CAKE" + Math.floor(100000 + Math.random() * 900000),
+        name: document.getElementById("customerName").value.trim(),
+        phone: document.getElementById("phone").value.trim(),
+        address: document.getElementById("address").value.trim(),
+        location: document.getElementById("deliveryLocation").value.trim(),
+        message: document.getElementById("cakeMessage").value.trim(),
+        payment: document.getElementById("paymentMethod").value,
+        items: cart.map(c => ({...c})),
+        total: cart.reduce((sum, c) => sum + c.price * c.quantity, 0),
+        status: "Order Placed"
+    };
+
+    orders.push(order);
+    cart = [];
+    displayCart();
+    displayOrders();
+
+    document.getElementById("orderMessage").innerHTML =
+        `<div class="message">
+            <h3>Order Placed Successfully!</h3>
+            <p>Order ID: ${order.id}</p>
+            <p>Total: ₹${order.total}</p>
+            <p>Status: ${order.status}</p>
+            <p>Payment: Demo only; no payment processed.</p>
+        </div>`;
+
+    this.reset();
+    updateAdminReport();
+};
+
+function displayOrders() {
+    const history = document.getElementById("orderHistory");
+
+    if (!orders.length) {
+        history.textContent = "No orders placed yet.";
+        return;
+    }
+
+    history.innerHTML = orders.map(o => `
+        <div class="message">
+            <b>Order ID:</b> ${o.id}
+            <p>Customer: ${o.name}</p>
+            <p>Delivery: ${o.location}</p>
+            <p>Address: ${o.address}</p>
+            <p>Total: ₹${o.total}</p>
+            <p>Status: ${o.status}</p>
+        </div>
+    `).join("");
+}
+
+// Demo admin credentials: admin / admin123
+document.getElementById("adminForm").onsubmit = function(e) {
+    e.preventDefault();
+
+    if (document.getElementById("adminUser").value === "admin" &&
+        document.getElementById("adminPassword").value === "admin123") {
+        adminLoggedIn = true;
+        document.getElementById("adminPanel").hidden = false;
+        updateAdminReport();
+        displayAdminOrders();
+    } else {
+        alert("Invalid admin credentials.");
+    }
+};
+
+function addCake() {
+    if (!adminLoggedIn) return;
+
+    const name = document.getElementById("newCakeName").value.trim();
+    const flavor = document.getElementById("newCakeFlavor").value.trim();
+    const category = document.getElementById("newCakeCategory").value;
+    const price = Number(document.getElementById("newCakePrice").value);
+    const image = document.getElementById("newCakeImage").value.trim();
+    const description = document.getElementById("newCakeDescription").value.trim();
+
+    if (!name || !flavor || !description || !Number.isFinite(price) || price <= 0) {
+        alert("Enter valid cake details.");
+        return;
+    }
+
+    cakes.push({
+        id: nextCakeId++,
+        name, flavor, category, price, description,
+        image: image || "https://placehold.co/400x250?text=Cake"
+    });
+
+    displayCakes();
+    document.getElementById("adminMessage").textContent =
+        "Cake added successfully.";
+    updateAdminReport();
+}
+
+function displayAdminOrders() {
+    const panel = document.getElementById("adminOrders");
+
+    if (!orders.length) {
+        panel.textContent = "No orders available.";
+        return;
+    }
+
+    panel.innerHTML = orders.map(o => `
+        <div class="message">
+            <b>${o.id}</b> - ${o.name}
+            <p>Location: ${o.location}</p>
+            <p>Total: ₹${o.total}</p>
+            <p>Status: ${o.status}</p>
+            <select id="status-${o.id}">
+                <option>Order Placed</option>
+                <option>Preparing</option>
+                <option>Shipped</option>
+                <option>Out for Delivery</option>
+                <option>Delivered</option>
+                <option>Cancelled</option>
+            </select>
+            <button onclick="updateStatus('${o.id}')">Update Status</button>
+        </div>
+    `).join("");
+
+    orders.forEach(o => {
+        document.getElementById("status-" + o.id).value = o.status;
+    });
+}
+
+function updateStatus(id) {
+    if (!adminLoggedIn) return;
+
+    const order = orders.find(o => o.id === id);
+    if (!order) return;
+
+    order.status = document.getElementById("status-" + id).value;
+    displayOrders();
+    displayAdminOrders();
+    updateAdminReport();
+}
+
+function updateAdminReport() {
+    document.getElementById("adminReport").textContent =
+        "Total cakes: " + cakes.length +
+        " | Total orders: " + orders.length +
+        " | Revenue from demo orders: ₹" +
+        orders.filter(o => o.status !== "Cancelled")
+              .reduce((sum, o) => sum + o.total, 0);
+}
+
+function adminLogout() {
+    adminLoggedIn = false;
+    document.getElementById("adminPanel").hidden = true;
+    document.getElementById("adminForm").reset();
+}
+
+displayCakes();
+displayCart();
+</script>
+
+</body>
+</html>
